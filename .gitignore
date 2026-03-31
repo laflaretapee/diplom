@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+node_modules/
+dist/
+.env
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+.agents/
+celerybeat-schedule
+logs/
+"stitch (5)/"
+stitch*/
+*.html
+test_task*.py
+tasks.json
+skills-lock.json

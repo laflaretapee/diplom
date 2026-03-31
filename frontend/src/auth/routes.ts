@@ -1,0 +1,54 @@
+import type { Role } from './types';
+
+const ROLE_PATHS: Record<Role, string[]> = {
+  super_admin: ['/dashboard', '/assistant', '/dishes', '/warehouse', '/franchisee', '/orders', '/orders/history'],
+  franchisee: ['/dashboard', '/assistant', '/warehouse', '/orders', '/orders/history'],
+  point_manager: ['/orders', '/warehouse', '/orders/history', '/queue'],
+  staff: ['/orders', '/orders/history', '/queue'],
+};
+
+export function getOrdersRouteForRole(role: Role | null): string {
+  if (role === 'point_manager' || role === 'staff') {
+    return '/queue';
+  }
+
+  return '/orders/history';
+}
+
+export function getDefaultRouteForRole(role: Role | null): string {
+  if (role === 'point_manager' || role === 'staff') {
+    return '/orders';
+  }
+
+  return '/dashboard';
+}
+
+export function canAccessPath(role: Role | null, pathname: string): boolean {
+  if (!role) {
+    return false;
+  }
+
+  const normalizedPath = pathname === '/' ? pathname : pathname.replace(/\/+$/, '');
+  return ROLE_PATHS[role].some((allowedPath) => {
+    if (normalizedPath === allowedPath) {
+      return true;
+    }
+
+    return normalizedPath.startsWith(`${allowedPath}/`);
+  });
+}
+
+export function resolvePostLoginPath(
+  requestedPath: string | null | undefined,
+  role: Role,
+): string {
+  if (!requestedPath || requestedPath === '/' || requestedPath === '/login') {
+    return getDefaultRouteForRole(role);
+  }
+
+  if (requestedPath === '/orders') {
+    return getOrdersRouteForRole(role);
+  }
+
+  return canAccessPath(role, requestedPath) ? requestedPath : getDefaultRouteForRole(role);
+}

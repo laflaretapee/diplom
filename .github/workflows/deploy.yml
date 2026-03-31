@@ -1,0 +1,44 @@
+name: Deploy VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+
+      - name: Upload deploy script
+        run: |
+          scp deploy/deploy_vps.sh "${VPS_USER}@${VPS_HOST}:/tmp/japonica-deploy.sh"
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+
+      - name: Run remote deploy
+        run: |
+          ssh "${VPS_USER}@${VPS_HOST}" \
+            "chmod +x /tmp/japonica-deploy.sh && \
+             APP_DIR='${VPS_APP_DIR}' \
+             BRANCH='main' \
+             /tmp/japonica-deploy.sh"
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
