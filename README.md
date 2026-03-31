@@ -103,6 +103,20 @@ Important groups:
 
 Detailed architecture notes live in `docs/architecture.md`.
 
+## Documents v1
+
+- Backend routes: `/api/v1/documents/upload`, `/api/v1/documents`, `/api/v1/documents/audit-log`, `/api/v1/documents/{id}/download`
+- Private file storage goes to `STORAGE_PATH` and is mounted via `storage_data` volume
+- Supported upload types: `pdf`, `doc`, `docx`, `xls`, `xlsx`, `png`, `jpg`, `jpeg`, `txt`
+- Access is protected by auth + role scope; downloads are not exposed by Nginx as static files
+
+## Kanban v1
+
+- Backend routes cover boards, columns, cards, history, comments, custom fields, and card attachments
+- Card attachments reuse the Documents module with `entity_type=card`
+- Outbox events are stored in `domain_events` and published by Celery beat every 10 seconds
+- Telegram notifications include assignee, deadline, and overdue reminders for linked users
+
 ## Security Notes
 
 - Refresh token uses an HTTP-only cookie.

@@ -1,10 +1,28 @@
 import type { Role } from './types';
 
 const ROLE_PATHS: Record<Role, string[]> = {
-  super_admin: ['/dashboard', '/assistant', '/dishes', '/warehouse', '/franchisee', '/orders', '/orders/history'],
-  franchisee: ['/dashboard', '/assistant', '/warehouse', '/orders', '/orders/history'],
-  point_manager: ['/orders', '/warehouse', '/orders/history', '/queue'],
-  staff: ['/orders', '/orders/history', '/queue'],
+  super_admin: [
+    '/dashboard',
+    '/assistant',
+    '/dishes',
+    '/warehouse',
+    '/documents',
+    '/kanban',
+    '/franchisee',
+    '/orders',
+    '/orders/history',
+  ],
+  franchisee: [
+    '/dashboard',
+    '/assistant',
+    '/warehouse',
+    '/documents',
+    '/kanban',
+    '/orders',
+    '/orders/history',
+  ],
+  point_manager: ['/orders', '/warehouse', '/documents', '/kanban', '/orders/history', '/queue'],
+  staff: ['/orders', '/documents', '/orders/history', '/queue'],
 };
 
 export function getOrdersRouteForRole(role: Role | null): string {

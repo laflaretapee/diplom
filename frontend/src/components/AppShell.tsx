@@ -1,9 +1,11 @@
 import {
   AppstoreOutlined,
   DashboardOutlined,
+  FileTextOutlined,
   InboxOutlined,
   LogoutOutlined,
   OrderedListOutlined,
+  ProjectOutlined,
   RobotOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
@@ -22,6 +24,8 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/assistant', icon: <RobotOutlined />, label: 'ИИ-аналитик' },
     { key: '/dishes', icon: <AppstoreOutlined />, label: 'Блюда' },
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
+    { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
+    { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/franchisee', icon: <OrderedListOutlined />, label: 'Франчайзи' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'Заказы' },
   ],
@@ -29,18 +33,33 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Дашборд' },
     { key: '/assistant', icon: <RobotOutlined />, label: 'ИИ-аналитик' },
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
+    { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
+    { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'Заказы' },
   ],
   point_manager: [
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
+    { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
+    { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'История заказов' },
     { key: '/queue', icon: <OrderedListOutlined />, label: 'Очередь' },
   ],
   staff: [
+    { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'История заказов' },
     { key: '/queue', icon: <OrderedListOutlined />, label: 'Очередь' },
   ],
 };
+
+function resolveSelectedKey(pathname: string): string {
+  if (pathname.startsWith('/kanban')) {
+    return '/kanban';
+  }
+  if (pathname.startsWith('/documents')) {
+    return '/documents';
+  }
+  return pathname;
+}
 
 export function AppShell() {
   const { token } = theme.useToken();
@@ -123,7 +142,7 @@ export function AppShell() {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[resolveSelectedKey(location.pathname)]}
           items={menuItemsByRole[role]}
           onClick={handleMenuClick}
           style={{

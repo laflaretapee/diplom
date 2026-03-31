@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import get_settings
 from backend.app.core.logging import configure_logging
 from backend.app.modules.analytics.router import router as analytics_router
-from backend.app.modules.inbound.router import router as inbound_router
 from backend.app.modules.auth.router import router as auth_router
+from backend.app.modules.documents.router import router as documents_router
 from backend.app.modules.franchisee.router import router as franchisee_router
+from backend.app.modules.inbound.router import router as inbound_router
+from backend.app.modules.kanban.router import router as kanban_router
 from backend.app.modules.notifications.router import router as notifications_router
 from backend.app.modules.orders.router import router as orders_router
 from backend.app.modules.points.router import router as points_router
@@ -53,7 +55,10 @@ def create_application() -> FastAPI:
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        response.headers.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=()",
+        )
         response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
         if settings.cookie_secure:
             response.headers.setdefault(
@@ -72,6 +77,8 @@ def create_application() -> FastAPI:
     app.include_router(points_router, prefix=settings.api_prefix)
     app.include_router(warehouse_router, prefix=settings.api_prefix)
     app.include_router(franchisee_router, prefix=settings.api_prefix)
+    app.include_router(documents_router, prefix=settings.api_prefix)
+    app.include_router(kanban_router, prefix=settings.api_prefix)
     app.include_router(notifications_router, prefix=settings.api_prefix)
     app.include_router(analytics_router, prefix=settings.api_prefix)
     app.include_router(inbound_router, prefix=settings.api_prefix)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,6 +31,9 @@ from backend.app.modules.notifications.service import (
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
+CurrentUser = Annotated[User, Depends(get_current_user)]
+DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+
 
 @router.get("/status")
 async def notifications_status() -> NotificationsModuleStatus:
@@ -37,6 +42,7 @@ async def notifications_status() -> NotificationsModuleStatus:
 
 @router.post("/telegram/link", response_model=TelegramLinkResponse)
 async def create_telegram_link(
+    user: CurrentUser,
     _: None = rate_limit(
         RateLimitPolicy(
             bucket="telegram-link",
@@ -44,14 +50,13 @@ async def create_telegram_link(
             window_seconds=get_settings().telegram_link_rate_limit_window_seconds,
         )
     ),
-    user: User = Depends(get_current_user),
 ) -> TelegramLinkResponse:
     return await generate_link_code(user.id)
 
 
 @router.get("/preferences", response_model=NotificationPreferences)
 async def notification_preferences(
-    user: User = Depends(get_current_user),
+    user: CurrentUser,
 ) -> NotificationPreferences:
     return get_notification_preferences(user)
 
@@ -59,23 +64,23 @@ async def notification_preferences(
 @router.patch("/preferences", response_model=NotificationPreferences)
 async def patch_notification_preferences(
     payload: NotificationPreferencesUpdate,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db_session),
+    user: CurrentUser,
+    db: DbSession,
 ) -> NotificationPreferences:
     return await update_notification_preferences(user, payload, db)
 
 
 @router.get("/telegram/status", response_model=TelegramStatusResponse)
 async def telegram_status(
-    user: User = Depends(get_current_user),
+    user: CurrentUser,
 ) -> TelegramStatusResponse:
     return get_telegram_status(user)
 
 
 @router.post("/telegram/unlink", response_model=OperationStatusResponse)
 async def telegram_unlink(
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db_session),
+    user: CurrentUser,
+    db: DbSession,
 ) -> OperationStatusResponse:
     await unlink_telegram(user, db)
     return OperationStatusResponse(ok=True)
@@ -84,6 +89,7 @@ async def telegram_unlink(
 @router.post("/telegram/webhook", response_model=OperationStatusResponse)
 async def telegram_webhook(
     update: TelegramWebhookUpdate,
+    db: DbSession,
     _: None = rate_limit(
         RateLimitPolicy(
             bucket="telegram-webhook",
@@ -91,7 +97,6 @@ async def telegram_webhook(
             window_seconds=get_settings().telegram_webhook_rate_limit_window_seconds,
         )
     ),
-    db: AsyncSession = Depends(get_db_session),
     secret: str | None = Header(default=None, alias="X-Telegram-Bot-Api-Secret-Token"),
 ) -> OperationStatusResponse:
     settings = get_settings()

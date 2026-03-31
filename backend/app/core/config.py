@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     telegram_webhook_rate_limit_window_seconds: int = 60
     nginx_server_name: str = "localhost"
     letsencrypt_email: str = "admin@example.com"
+    storage_backend: str = "local"
+    storage_path: str = "/app/storage/private"
     cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",

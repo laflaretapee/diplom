@@ -9,7 +9,10 @@ import { useAuthStore } from './auth/store';
 import { AIAssistantPage } from './pages/AIAssistantPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { DishesPage } from './pages/DishesPage';
+import { DocumentsPage } from './pages/DocumentsPage';
 import { FranchiseeKanbanPage } from './pages/FranchiseeKanbanPage';
+import { KanbanBoardPage } from './pages/KanbanBoardPage';
+import { KanbanBoardsPage } from './pages/KanbanBoardsPage';
 import { LoginPage } from './pages/LoginPage';
 import { OrderHistoryPage } from './pages/OrderHistoryPage';
 import { OrderQueuePage } from './pages/OrderQueuePage';
@@ -122,6 +125,9 @@ const router = createBrowserRouter([
               { path: 'dashboard', element: <DashboardPage /> },
               { path: 'assistant', element: <AIAssistantPage /> },
               { path: 'dishes', element: <DishesPage /> },
+              { path: 'documents', element: <DocumentsPage /> },
+              { path: 'kanban', element: <KanbanBoardsPage /> },
+              { path: 'kanban/:boardId', element: <KanbanBoardPage /> },
               { path: 'franchisee', element: <FranchiseeKanbanPage /> },
               { path: 'orders', element: <OrdersRedirect /> },
               { path: 'orders/history', element: <OrderHistoryPage /> },

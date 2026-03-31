@@ -345,3 +345,123 @@
   - `POST http://127.0.0.1:15173/api/v1/auth/login` → `200`
   - прямой `POST http://127.0.0.1:18000/api/v1/auth/login` → `200`
   - `docker compose ps` остаётся healthy
+
+## 2026-03-31 (сессия 16)
+
+- Sprint 1 разбит по `prompt_от_PRD_до_tasks.md`, в `tasks.json` уже были добавлены `TASK-061..082`; по фактической верификации переведены в `done`:
+  - `TASK-062` `TASK-064` `TASK-070` `TASK-071` `TASK-072` `TASK-073` `TASK-082`
+- Работа велась параллельно через 4 субагента:
+  - Documents backend
+  - Kanban backend
+  - Frontend Documents + Kanban
+  - Telegram/mock notifications
+- Что интегрировано в кодовую базу:
+  - модуль `documents` с private storage, audit log, RBAC и API загрузки/скачивания
+  - модуль `kanban` с досками, колонками, карточками, history, comments, custom fields и attachments через Documents
+  - outbox `domain_events` + Celery beat `process_outbox_events`
+  - frontend-страницы `/documents`, `/kanban`, `/kanban/:boardId` и пункты меню
+  - Telegram mock-команды `/orders`, `/order`, `/tasks`, `/stock`, `/stock_add`, `/low_stock`; `/start` теперь отдаёт inline keyboard
+  - `README.md` дополнен разделами `Documents v1` и `Kanban v1`
+- Дополнительные исправления по интеграции:
+  - `kanban custom_fields.options` расширен до произвольного JSON, чтобы принимать массивы для `select`
+  - `nginx/default.conf` поднят до `client_max_body_size 55m` под лимит файлов 50 MB
+  - `documents` публикует outbox-события `document.uploaded`, `document.downloaded`, `document.deleted`
+- Верификация:
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run ruff check backend/app/core/telegram.py backend/app/modules/notifications backend/app/main.py backend/app/celery_app.py backend/app/worker.py backend/app/core/events.py backend/app/core/storage.py backend/app/db/models.py backend/app/modules/documents backend/app/modules/kanban backend/tests/test_kanban_service.py`
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run pytest backend/app/modules/notifications/test_telegram_service.py backend/tests/test_documents_storage.py backend/tests/test_documents_validation.py backend/tests/test_kanban_service.py -q`
+  - `docker compose config`
+  - `DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/japonica_crm UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run alembic upgrade head`
+  - `DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/japonica_crm UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run python backend/scripts/export_openapi.py --output docs/openapi.json`
+  - `cd frontend && npm run typecheck`
+  - `cd frontend && npm run build`
+  - live smoke по `kanban + documents`:
+    - login → `200`
+    - create board/columns → `201`
+    - reorder columns → `200`
+    - create card/move/history/comment/custom field/attachment → `200/201`
+    - `GET /documents` + `GET /documents/{id}/download` + `GET /documents/audit-log` → `200`
+    - итог smoke: `history_entries=1`, `custom_field_values=1`, `documents_count=1`, `audit_count=2`
+- Оставлено в `pending` сознательно:
+  - frontend manual QA задачи `TASK-068`, `TASK-069`, `TASK-075`, `TASK-076`, `TASK-077`
+  - уведомления и Telegram end-to-end без отдельного acceptance-прогона `TASK-074`, `TASK-078`
+  - отдельные test packs `TASK-080`, `TASK-081`
+
+## 2026-03-31 (сессия 17)
+
+- Доведён backend-пакет вокруг уведомлений, Telegram mock и test coverage Sprint 1.
+- Закрыты по свежей верификации:
+  - `TASK-074` — kanban notifications
+  - `TASK-068` — documents page
+  - `TASK-069` — documents audit viewer
+  - `TASK-075` — kanban boards page
+  - `TASK-076` — kanban board page with drag-and-drop
+  - `TASK-077` — card drawer/details
+  - `TASK-078` — Telegram mock commands
+  - `TASK-080` — documents RBAC/validation tests
+  - `TASK-081` — kanban CRUD/comments/custom fields/attachments tests
+- Production-правки:
+  - `backend/app/modules/kanban/service.py`
+    - `list_boards()` теперь возвращает `card_count`
+    - `create_card()` и `update_card()` планируют Celery notification tasks на assignee/deadline
+  - `backend/app/modules/kanban/tasks.py`
+    - добавлен alias task `send_card_deadline_set_notification`
+    - тексты уведомлений включают название карточки, доски и срок
+    - при отсутствии `telegram_chat_id` пишется `WARNING`, уведомление пропускается
+  - `backend/app/modules/notifications/service.py`
+    - `/start` теперь явно приветствует пользователя
+    - `/orders` отдаёт до 10 заказов вместо 8
+  - frontend:
+    - `frontend/src/pages/KanbanBoardsPage.tsx` показывает `card_count`
+    - `frontend/src/pages/KanbanBoardPage.tsx` получил inline-редактирование заголовка карточки в drawer
+- Добавлены/обновлены тесты:
+  - `backend/tests/test_documents_rbac.py`
+  - `backend/tests/test_documents_validation.py`
+  - `backend/tests/test_kanban_notifications.py`
+  - `backend/tests/test_kanban_boards.py`
+  - `backend/tests/test_kanban_cards.py`
+  - `backend/tests/test_kanban_extras.py`
+- Верификация:
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run pytest backend/app/modules/notifications/test_telegram_service.py backend/tests/test_documents_rbac.py backend/tests/test_documents_validation.py backend/tests/test_kanban_notifications.py backend/tests/test_kanban_boards.py backend/tests/test_kanban_cards.py backend/tests/test_kanban_extras.py backend/tests/test_kanban_service.py -q`
+    - `31 passed in 0.81s`
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run ruff check backend/app/modules/notifications backend/app/modules/kanban backend/tests/test_documents_rbac.py backend/tests/test_documents_validation.py backend/tests/test_kanban_notifications.py backend/tests/test_kanban_boards.py backend/tests/test_kanban_cards.py backend/tests/test_kanban_extras.py backend/tests/test_kanban_service.py`
+    - `All checks passed!`
+  - `cd frontend && npm run typecheck`
+  - `cd frontend && npm run build`
+  - static acceptance сверка по frontend:
+    - routes `/documents`, `/kanban`, `/kanban/:boardId` подключены
+    - sidebar roles содержит `Документы` и `Канбан`
+    - `DocumentsPage` содержит upload drag-and-drop, filters, download, delete, audit tab
+    - `KanbanBoardsPage` содержит create/delete/navigate/card_count
+    - `KanbanBoardPage` содержит `DndContext`, card counter, drawer sections `Комментарии`, `Вложения`, `Кастомные поля`, `История`, inline title edit
+  - live smoke:
+    - `GET /kanban/boards` возвращает `card_count`
+    - `PUT /kanban/cards/{id}` с новым `deadline` → `200`
+    - helper smoke для Telegram parser/start text:
+      - callback `orders` распознаётся
+      - `/tasks` распознаётся
+      - текст `/start` содержит приветствие
+  - service-level Telegram smoke на реальной БД для `manager-ufa1@japonica.example.com`:
+    - `/start` → inline keyboard
+    - `/orders` → список заказов точки
+    - `/order {id} {next_status}` → статус обновлён
+    - `/tasks` → активная kanban-карточка с deadline/priority
+    - `/stock` → реальные остатки
+    - `/stock_add {ingredient_id} 1.250` → приход отражён в ответе
+    - `/low_stock` → корректный ответ по порогам
+
+## 2026-03-31 (сессия 17)
+
+- Закрыл `TASK-080` тестами для Documents без правок production-кода.
+- Добавлено:
+  - [backend/tests/test_documents_rbac.py](/home/dinar/diplom/backend/tests/test_documents_rbac.py) с 8 unit-level кейсами на `super_admin`, `franchisee`, `point_manager`, `staff`
+  - [backend/tests/test_documents_validation.py](/home/dinar/diplom/backend/tests/test_documents_validation.py) с кейсом на `bad extension` (`.exe`)
+- Подход:
+  - RBAC проверяется напрямую через `backend.app.modules.documents.service.ensure_document_action_allowed`
+  - для веток scope использован `monkeypatch` внутренних helper'ов `_get_entity_scope`, `_task_belongs_to_franchisees`, `_card_is_visible_for_user`
+- Верификация:
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run pytest backend/tests/test_documents_rbac.py backend/tests/test_documents_validation.py -q`
+  - результат: `12 passed in 0.49s`
+  - `UV_PROJECT_ENVIRONMENT=/tmp/diplom-uv-env uv run ruff check backend/tests/test_documents_rbac.py backend/tests/test_documents_validation.py`
+  - результат: `All checks passed!`
+- Статус:
+  - `TASK-080` переведён в `done`

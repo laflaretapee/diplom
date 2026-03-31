@@ -48,8 +48,19 @@ class TelegramWebhookMessage(BaseModel):
     chat: TelegramWebhookChat
 
 
+class TelegramWebhookCallbackQuery(BaseModel):
+    data: str | None = None
+    message: TelegramWebhookMessage | None = None
+
+
 class TelegramWebhookUpdate(BaseModel):
     message: TelegramWebhookMessage | None = None
+    callback_query: TelegramWebhookCallbackQuery | None = None
+
+
+class TelegramCommand(BaseModel):
+    name: str
+    args: list[str] = []
 
 
 class OperationStatusResponse(BaseModel):
