@@ -703,6 +703,7 @@ export function DishesPage() {
                   columns={dishColumns}
                   dataSource={dishes}
                   pagination={{ pageSize: 8, hideOnSinglePage: true }}
+                  scroll={{ x: 960 }}
                   locale={{ emptyText: <Empty description="Блюда пока не заведены" /> }}
                   onRow={(record) => ({
                     onClick: () => {
@@ -852,6 +853,7 @@ export function DishesPage() {
                   columns={ingredientColumns}
                   dataSource={ingredientsQuery.data ?? []}
                   pagination={false}
+                  scroll={{ x: 640 }}
                   locale={{
                     emptyText: <Empty description="Для блюда ещё не настроен состав" />,
                   }}

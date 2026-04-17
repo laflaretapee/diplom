@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import {
-  DatabaseOutlined,
   FileTextOutlined,
   HistoryOutlined,
   LoadingOutlined,
   RobotOutlined,
   SearchOutlined,
   SendOutlined,
-  ThunderboltOutlined,
-  UserOutlined,
   WarningOutlined,
-  ExperimentOutlined,
-  RiseOutlined,
-  CheckCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -23,6 +18,7 @@ import { apiClient } from '../api/client';
 import { roleMeta } from '../auth/roleMeta';
 import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { ensureArray } from '../utils/ensureArray';
 
 type AssistantEvidence = {
@@ -221,30 +217,6 @@ function getAssistantStatus({
   };
 }
 
-function buildQuickInsights(scopeLabel: string): { title: string; question: string; icon: JSX.Element }[] {
-  return [
-    {
-      title: 'Аномалии недели',
-      question: `Какие аномалии требуют внимания в контуре «${scopeLabel}» на этой неделе?`,
-      icon: <WarningOutlined />,
-    },
-    {
-      title: 'Динамика выручки',
-      question: `Почему выручка в контуре «${scopeLabel}» изменилась за последние 7 дней?`,
-      icon: <RiseOutlined />,
-    },
-    {
-      title: 'Операционный риск',
-      question: `Какие сигналы прямо сейчас указывают на операционные проблемы в контуре «${scopeLabel}»?`,
-      icon: <ExperimentOutlined />,
-    },
-    {
-      title: 'Краткая сводка',
-      question: `Сделай краткую сводку по текущим показателям для контура «${scopeLabel}».`,
-      icon: <DatabaseOutlined />,
-    },
-  ];
-}
 
 const SAVED_SCENARIOS = [
   {
@@ -316,48 +288,6 @@ function MonoBadge({
   );
 }
 
-function PromptButton({
-  title,
-  subtitle,
-  icon,
-  onClick,
-}: {
-  title: string;
-  subtitle: string;
-  icon: JSX.Element;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: '100%',
-        padding: 14,
-        background: '#201F1F',
-        border: '1px solid #2A2A2A',
-        borderRadius: 8,
-        color: '#E5E2E1',
-        textAlign: 'left',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 10,
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
-        <Typography.Text strong style={{ color: '#E5E2E1', fontSize: 13, display: 'block' }}>
-          {title}
-        </Typography.Text>
-        <Typography.Text style={{ color: '#BFB6A8', fontSize: 11, lineHeight: 1.4, display: 'block', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-          {subtitle}
-        </Typography.Text>
-      </div>
-      <span style={{ color: '#E8B86D', fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
-    </button>
-  );
-}
 
 function AccessDeniedCard({ roleLabel }: { roleLabel: string }) {
   return (
@@ -416,17 +346,34 @@ function AccessDeniedCard({ roleLabel }: { roleLabel: string }) {
   );
 }
 
-function UserBubble({ question, askedAt }: { question: string; askedAt: number }) {
+function UserBubble({
+  question,
+  askedAt,
+  compact = false,
+}: {
+  question: string;
+  askedAt: number;
+  compact?: boolean;
+}) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-      <div style={{ maxWidth: 'min(760px, 88%)', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+      <div
+        style={{
+          width: compact ? '100%' : 'auto',
+          maxWidth: compact ? '100%' : 'min(760px, 88%)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          alignItems: 'flex-end',
+        }}
+      >
         <div
           style={{
             background: '#201F1F',
             border: '1px solid #2A2A2A',
             borderRadius: 18,
             borderTopRightRadius: 4,
-            padding: '14px 16px',
+            padding: compact ? '12px 14px' : '14px 16px',
             boxShadow: '0 12px 30px rgba(0, 0, 0, 0.18)',
           }}
         >
@@ -450,7 +397,13 @@ function UserBubble({ question, askedAt }: { question: string; askedAt: number }
   );
 }
 
-function EvidenceGrid({ items }: { items: AssistantEvidence[] }) {
+function EvidenceGrid({
+  items,
+  compact = false,
+}: {
+  items: AssistantEvidence[];
+  compact?: boolean;
+}) {
   if (!items.length) {
     return null;
   }
@@ -459,7 +412,7 @@ function EvidenceGrid({ items }: { items: AssistantEvidence[] }) {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: 10,
       }}
     >
@@ -528,19 +481,21 @@ function SuggestionsRow({ suggestions, onPick }: { suggestions: string[]; onPick
 function AssistantBubble({
   turn,
   onSuggestionPick,
+  compact = false,
 }: {
   turn: ChatTurn;
   onSuggestionPick: (value: string) => void;
+  compact?: boolean;
 }) {
   const response = turn.response;
 
   if (turn.status === 'loading') {
     return (
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: compact ? 10 : 12 }}>
         <div
           style={{
-            width: 36,
-            height: 36,
+            width: compact ? 32 : 36,
+            height: compact ? 32 : 36,
             borderRadius: 12,
             display: 'grid',
             placeItems: 'center',
@@ -555,12 +510,12 @@ function AssistantBubble({
         <div style={{ flex: 1 }}>
           <div
             style={{
-              maxWidth: 'min(900px, 92%)',
+              maxWidth: compact ? '100%' : 'min(900px, 92%)',
               background: '#201F1F',
               border: '1px solid #2A2A2A',
               borderRadius: 18,
               borderTopLeftRadius: 4,
-              padding: '14px 16px',
+              padding: compact ? '12px 14px' : '14px 16px',
             }}
           >
             <Space direction="vertical" size={10} style={{ width: '100%' }}>
@@ -580,11 +535,11 @@ function AssistantBubble({
 
   if (turn.status === 'error') {
     return (
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: compact ? 10 : 12 }}>
         <div
           style={{
-            width: 36,
-            height: 36,
+            width: compact ? 32 : 36,
+            height: compact ? 32 : 36,
             borderRadius: 12,
             display: 'grid',
             placeItems: 'center',
@@ -598,12 +553,12 @@ function AssistantBubble({
         </div>
         <div
           style={{
-            maxWidth: 'min(900px, 92%)',
+            maxWidth: compact ? '100%' : 'min(900px, 92%)',
             background: '#201F1F',
             border: '1px solid #4A2A2A',
             borderRadius: 18,
             borderTopLeftRadius: 4,
-            padding: '14px 16px',
+            padding: compact ? '12px 14px' : '14px 16px',
           }}
         >
           <Space direction="vertical" size={10} style={{ width: '100%' }}>
@@ -623,11 +578,11 @@ function AssistantBubble({
   }
 
   return (
-    <div style={{ display: 'flex', gap: 12 }}>
+    <div style={{ display: 'flex', gap: compact ? 10 : 12 }}>
       <div
         style={{
-          width: 36,
-          height: 36,
+          width: compact ? 32 : 36,
+          height: compact ? 32 : 36,
           borderRadius: 12,
           display: 'grid',
           placeItems: 'center',
@@ -640,14 +595,14 @@ function AssistantBubble({
       >
         <RobotOutlined />
       </div>
-      <div style={{ flex: 1, maxWidth: 'min(980px, 92%)' }}>
+      <div style={{ flex: 1, maxWidth: compact ? '100%' : 'min(980px, 92%)' }}>
         <div
           style={{
             background: '#201F1F',
             border: '1px solid #2A2A2A',
             borderRadius: 18,
             borderTopLeftRadius: 4,
-            padding: 16,
+            padding: compact ? 14 : 16,
             boxShadow: '0 18px 40px rgba(0, 0, 0, 0.18)',
           }}
         >
@@ -681,10 +636,10 @@ function AssistantBubble({
                 Основания
               </Typography.Text>
             </div>
-            <EvidenceGrid items={response.evidence} />
+            <EvidenceGrid items={response.evidence} compact={compact} />
             <div
               style={{
-                padding: 14,
+                padding: compact ? 12 : 14,
                 borderRadius: 14,
                 background: '#2A2418',
                 border: '1px solid #4F4538',
@@ -712,17 +667,17 @@ function AssistantBubble({
 }
 
 function EmptyState({
-  onPickPrompt,
   scopeLabel,
   statusLabel,
   statusDescription,
   statusTone,
+  compact = false,
 }: {
-  onPickPrompt: (question: string) => void;
   scopeLabel: string;
   statusLabel: string;
   statusDescription: string;
   statusTone: 'neutral' | 'accent' | 'warning' | 'danger';
+  compact?: boolean;
 }) {
   return (
     <Card
@@ -733,12 +688,12 @@ function EmptyState({
         boxShadow: '0 18px 40px rgba(0, 0, 0, 0.20)',
       }}
     >
-      <Space direction="vertical" size={18} style={{ width: '100%' }}>
+      <Space direction="vertical" size={compact ? 14 : 18} style={{ width: '100%' }}>
         <Space align="center" size={12}>
           <div
             style={{
-              width: 44,
-              height: 44,
+              width: compact ? 40 : 44,
+              height: compact ? 40 : 44,
               borderRadius: 14,
               display: 'grid',
               placeItems: 'center',
@@ -774,36 +729,6 @@ function EmptyState({
             </Typography.Text>
           </Space>
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 12,
-          }}
-        >
-          {[
-            'Почему выручка изменилась на этой неделе?',
-            'Какие аномалии требуют срочного внимания?',
-            'Суммируйте операционный риск для этого контура.',
-            'Какому доказательству стоит доверять больше всего?',
-          ].map((question) => (
-            <Button
-              key={question}
-              onClick={() => onPickPrompt(question)}
-              style={{
-                height: 'auto',
-                minHeight: 64,
-                padding: 14,
-                textAlign: 'left',
-                background: '#201F1F',
-                borderColor: '#2A2A2A',
-                color: '#E5E2E1',
-              }}
-            >
-              {question}
-            </Button>
-          ))}
-        </div>
       </Space>
     </Card>
   );
@@ -812,6 +737,7 @@ function EmptyState({
 export function AIAssistantPage() {
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
+  const isMobileLayout = useIsMobileLayout('lg');
   const isAllowed = role ? ALLOWED_ROLES.includes(role) : false;
   const inputRef = useRef<InputRef>(null);
   const scrollEndRef = useRef<HTMLDivElement | null>(null);
@@ -852,7 +778,6 @@ export function AIAssistantPage() {
   const selectedPointId = pointFilter === ALL_POINTS_VALUE ? null : pointFilter;
   const assistantPoints = ensureArray<PointRead>(pointsQuery.data);
   const selectedPointLabel = getActivePointLabel(selectedPointId, assistantPoints);
-  const quickInsights = useMemo(() => buildQuickInsights(selectedPointLabel), [selectedPointLabel]);
   const latestDoneTurn = useMemo(
     () => [...turns].reverse().find((turn) => turn.status === 'done' && turn.response),
     [turns],
@@ -939,12 +864,29 @@ export function AIAssistantPage() {
     })),
   ];
 
+  const scenarioRailStyle = isMobileLayout
+    ? ({
+        display: 'flex',
+        gap: 10,
+        overflowX: 'auto',
+        paddingBottom: 4,
+        width: '100%',
+        maxWidth: '100%',
+        scrollSnapType: 'x proximity',
+      } satisfies CSSProperties)
+    : ({
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      } satisfies CSSProperties);
+
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 112px)',
+        minHeight: isMobileLayout ? 'auto' : 'calc(100vh - 112px)',
         display: 'flex',
-        gap: 18,
+        flexDirection: isMobileLayout ? 'column' : 'row',
+        gap: isMobileLayout ? 12 : 18,
         position: 'relative',
       }}
     >
@@ -962,23 +904,23 @@ export function AIAssistantPage() {
 
       <aside
         style={{
-          width: 298,
-          minWidth: 298,
+          width: isMobileLayout ? '100%' : 298,
+          minWidth: isMobileLayout ? 0 : 298,
           background: '#0E0E0E',
           border: '1px solid #2A2A2A',
-          borderRadius: 20,
-          padding: 18,
+          borderRadius: isMobileLayout ? 18 : 20,
+          padding: isMobileLayout ? 14 : 18,
           display: 'flex',
           flexDirection: 'column',
-          gap: 18,
-          overflow: 'auto',
+          gap: isMobileLayout ? 14 : 18,
+          overflow: isMobileLayout ? 'hidden' : 'auto',
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.28)',
           position: 'relative',
           zIndex: 1,
         }}
       >
         <div>
-          <Space align="center" size={12}>
+          <Space align="center" size={12} wrap>
             <div
               style={{
                 width: 36,
@@ -1000,58 +942,50 @@ export function AIAssistantPage() {
                 Аналитическая консоль
               </Typography.Text>
             </div>
-          </Space>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <PageSectionLabel>Быстрые подсказки</PageSectionLabel>
-          <Space direction="vertical" size={10} style={{ width: '100%' }}>
-            {quickInsights.map((item) => (
-              <PromptButton
-                key={item.title}
-                title={item.title}
-                subtitle={item.question}
-                icon={item.icon}
-                onClick={() => handlePrefill(item.question)}
-              />
-            ))}
+            {isMobileLayout ? <MonoBadge tone="accent">{roleMeta[role].label}</MonoBadge> : null}
           </Space>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <PageSectionLabel>Готовые сценарии</PageSectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={scenarioRailStyle}>
             {SAVED_SCENARIOS.map((scenario) => (
-              <button
+              <div
                 key={scenario.title}
-                type="button"
-                onClick={() => handlePrefill(scenario.question)}
-                style={{
-                  width: '100%',
-                  padding: 12,
-                  borderRadius: 14,
-                  background: '#201F1F',
-                  border: '1px solid #2A2A2A',
-                  color: '#E5E2E1',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                }}
+                style={isMobileLayout ? { flex: '0 0 min(248px, 84vw)' } : { width: '100%' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <HistoryOutlined style={{ color: '#E8B86D', flexShrink: 0 }} />
-                  <Typography.Text strong style={{ color: '#E5E2E1', fontSize: 13 }}>
-                    {scenario.title}
+                <button
+                  type="button"
+                  onClick={() => handlePrefill(scenario.question)}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    borderRadius: 14,
+                    background: '#201F1F',
+                    border: '1px solid #2A2A2A',
+                    color: '#E5E2E1',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    minHeight: isMobileLayout ? 108 : undefined,
+                    scrollSnapAlign: isMobileLayout ? 'start' : undefined,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <HistoryOutlined style={{ color: '#E8B86D', flexShrink: 0 }} />
+                    <Typography.Text strong style={{ color: '#E5E2E1', fontSize: 13 }}>
+                      {scenario.title}
+                    </Typography.Text>
+                  </div>
+                  <Typography.Text style={{ color: '#BFB6A8', fontSize: 11, lineHeight: 1.4, display: 'block', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                    {scenario.question}
                   </Typography.Text>
-                </div>
-                <Typography.Text style={{ color: '#BFB6A8', fontSize: 11, lineHeight: 1.4, display: 'block', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                  {scenario.question}
-                </Typography.Text>
-              </button>
+                </button>
+              </div>
             ))}
           </div>
         </div>
 
-        <div style={{ marginTop: 'auto' }}>
+        <div style={{ marginTop: isMobileLayout ? 0 : 'auto' }}>
           <Card
             bordered={false}
             style={{
@@ -1080,7 +1014,7 @@ export function AIAssistantPage() {
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
-          gap: 14,
+          gap: isMobileLayout ? 12 : 14,
           position: 'relative',
           zIndex: 1,
         }}
@@ -1092,14 +1026,27 @@ export function AIAssistantPage() {
             backdropFilter: 'blur(18px)',
             border: '1px solid #2A2A2A',
             boxShadow: '0 20px 50px rgba(0, 0, 0, 0.18)',
-            position: 'sticky',
-            top: 0,
+            position: isMobileLayout ? 'relative' : 'sticky',
+            top: isMobileLayout ? undefined : 0,
             zIndex: 20,
           }}
-          styles={{ body: { padding: '14px 16px' } }}
+          styles={{ body: { padding: isMobileLayout ? '14px' : '14px 16px' } }}
         >
-          <Space align="center" size={12} wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-            <Space align="center" size={12} wrap>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: isMobileLayout ? 14 : 12,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: isMobileLayout ? 'column' : 'row',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
               <div>
                 <Typography.Title level={4} style={{ color: '#E5E2E1', margin: 0 }}>
                   ИИ-ассистент
@@ -1107,38 +1054,66 @@ export function AIAssistantPage() {
                 <Typography.Text style={{ color: '#BFB6A8' }}>
                   Диалог для аналитики, поиска причин и рекомендуемых действий.
                 </Typography.Text>
-                <Space size={8} wrap style={{ marginTop: 8 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                   <MonoBadge tone={assistantStatus.tone}>{assistantStatus.label}</MonoBadge>
                   <Typography.Text style={{ color: '#BFB6A8', fontSize: 12, lineHeight: 1.5 }}>
                     {assistantStatus.description}
                   </Typography.Text>
-                </Space>
+                </div>
               </div>
-            </Space>
-            <Space align="center" size={10} wrap>
-              <Select
-                value={pointFilter}
-                onChange={setPointFilter}
-                loading={pointsQuery.isLoading}
-                options={pointOptions}
-                style={{ minWidth: 240 }}
-                dropdownStyle={{ background: '#131313' }}
-              />
-              <MonoBadge tone="neutral">{selectedPointLabel}</MonoBadge>
-              <MonoBadge tone={latestDoneTurn?.response?.provider ? 'accent' : 'neutral'}>
-                {formatProviderLabel(latestDoneTurn?.response?.provider)}
-              </MonoBadge>
-              {latestDoneTurn?.response?.used_fallback ? <MonoBadge tone="warning">РЕЗЕРВНЫЙ РЕЖИМ</MonoBadge> : null}
-            </Space>
-          </Space>
+              {!isMobileLayout ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <Select
+                    value={pointFilter}
+                    onChange={setPointFilter}
+                    loading={pointsQuery.isLoading}
+                    options={pointOptions}
+                    style={{ minWidth: 240 }}
+                    dropdownStyle={{ background: '#131313' }}
+                  />
+                  <MonoBadge tone="neutral">{selectedPointLabel}</MonoBadge>
+                  <MonoBadge tone={latestDoneTurn?.response?.provider ? 'accent' : 'neutral'}>
+                    {formatProviderLabel(latestDoneTurn?.response?.provider)}
+                  </MonoBadge>
+                  {latestDoneTurn?.response?.used_fallback ? <MonoBadge tone="warning">РЕЗЕРВНЫЙ РЕЖИМ</MonoBadge> : null}
+                </div>
+              ) : null}
+            </div>
+            {isMobileLayout ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <Select
+                  value={pointFilter}
+                  onChange={setPointFilter}
+                  loading={pointsQuery.isLoading}
+                  options={pointOptions}
+                  style={{ width: '100%' }}
+                  dropdownStyle={{ background: '#131313' }}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    overflowX: 'auto',
+                    paddingBottom: 2,
+                  }}
+                >
+                  <MonoBadge tone="neutral">{selectedPointLabel}</MonoBadge>
+                  <MonoBadge tone={latestDoneTurn?.response?.provider ? 'accent' : 'neutral'}>
+                    {formatProviderLabel(latestDoneTurn?.response?.provider)}
+                  </MonoBadge>
+                  {latestDoneTurn?.response?.used_fallback ? <MonoBadge tone="warning">РЕЗЕРВНЫЙ РЕЖИМ</MonoBadge> : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </Card>
 
         <div
           style={{
-            flex: 1,
+            flex: isMobileLayout ? 'initial' : 1,
             minHeight: 0,
-            overflow: 'auto',
-            padding: '4px 2px 0 2px',
+            overflow: isMobileLayout ? 'visible' : 'auto',
+            padding: isMobileLayout ? '2px 0 0' : '4px 2px 0 2px',
             position: 'relative',
           }}
         >
@@ -1146,21 +1121,22 @@ export function AIAssistantPage() {
             {turns.length === 0 ? (
               <div style={{ paddingTop: 12 }}>
                 <EmptyState
-                  onPickPrompt={handlePrefill}
                   scopeLabel={selectedPointLabel}
                   statusLabel={assistantStatus.label}
                   statusDescription={assistantStatus.description}
                   statusTone={assistantStatus.tone}
+                  compact={isMobileLayout}
                 />
               </div>
             ) : (
               <Space direction="vertical" size={18} style={{ width: '100%' }}>
                 {turns.map((turn) => (
                   <Space key={turn.turnId} direction="vertical" size={12} style={{ width: '100%' }}>
-                    <UserBubble question={turn.question} askedAt={turn.askedAt} />
+                    <UserBubble question={turn.question} askedAt={turn.askedAt} compact={isMobileLayout} />
                     <AssistantBubble
                       turn={turn}
                       onSuggestionPick={(value) => handlePrefill(value)}
+                      compact={isMobileLayout}
                     />
                   </Space>
                 ))}
@@ -1179,9 +1155,11 @@ export function AIAssistantPage() {
         >
           <div
             style={{
-              background: 'linear-gradient(180deg, rgba(19, 19, 19, 0.05) 0%, rgba(19, 19, 19, 0.92) 24%, rgba(19, 19, 19, 0.98) 100%)',
-              borderTop: '1px solid rgba(42, 42, 42, 0.92)',
-              paddingTop: 14,
+              background: isMobileLayout
+                ? 'transparent'
+                : 'linear-gradient(180deg, rgba(19, 19, 19, 0.05) 0%, rgba(19, 19, 19, 0.92) 24%, rgba(19, 19, 19, 0.98) 100%)',
+              borderTop: isMobileLayout ? 'none' : '1px solid rgba(42, 42, 42, 0.92)',
+              paddingTop: isMobileLayout ? 0 : 14,
             }}
           >
             <div
@@ -1196,26 +1174,35 @@ export function AIAssistantPage() {
                   background: '#2A2A2A',
                   border: '1px solid #4F4538',
                   borderRadius: 18,
-                  padding: 12,
+                  padding: isMobileLayout ? 12 : 12,
                   boxShadow: '0 24px 60px rgba(0, 0, 0, 0.26)',
                 }}
               >
-                <Space align="center" size={10} style={{ width: '100%' }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 12,
-                      display: 'grid',
-                      placeItems: 'center',
-                      background: '#131313',
-                      color: '#E8B86D',
-                      border: '1px solid #4F4538',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <FileTextOutlined />
-                  </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobileLayout ? '1fr' : 'auto minmax(0, 1fr) auto',
+                    gap: 10,
+                    alignItems: 'center',
+                  }}
+                >
+                  {!isMobileLayout ? (
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: '#131313',
+                        color: '#E8B86D',
+                        border: '1px solid #4F4538',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <FileTextOutlined />
+                    </div>
+                  ) : null}
                   <Input
                     ref={inputRef}
                     value={draft}
@@ -1233,6 +1220,7 @@ export function AIAssistantPage() {
                       boxShadow: 'none',
                       color: '#E5E2E1',
                       fontSize: 14,
+                      minHeight: isMobileLayout ? 48 : undefined,
                     }}
                   />
                   <Button
@@ -1244,28 +1232,38 @@ export function AIAssistantPage() {
                     }}
                     loading={chatMutation.isPending}
                     style={{
-                      minWidth: 132,
+                      width: isMobileLayout ? '100%' : undefined,
+                      minWidth: isMobileLayout ? undefined : 132,
                       background: 'linear-gradient(135deg, #FFD598 0%, #E8B86D 100%)',
                       color: '#281800',
                     }}
                   >
                     Отправить
                   </Button>
-                </Space>
-                <Space
-                  align="center"
-                  size={12}
-                  wrap
-                  style={{ marginTop: 10, justifyContent: 'space-between', width: '100%' }}
+                </div>
+                <div
+                  style={{
+                    marginTop: 10,
+                    display: 'flex',
+                    flexDirection: isMobileLayout ? 'column' : 'row',
+                    alignItems: isMobileLayout ? 'stretch' : 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    width: '100%',
+                  }}
                 >
-                  <Space size={8} wrap>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <MonoBadge tone="neutral">Чат ассистента</MonoBadge>
                     <MonoBadge tone="neutral">{`Контур: ${selectedPointLabel}`}</MonoBadge>
-                  </Space>
+                  </div>
                   <Typography.Text style={{ color: '#9B8F7F', fontSize: 11 }}>
-                    {chatMutation.isPending ? 'Генерируем ответ...' : 'Сообщение отправляется клавишей ввода.'}
+                    {chatMutation.isPending
+                      ? 'Генерируем ответ...'
+                      : isMobileLayout
+                        ? 'Нажмите «Отправить», чтобы отправить запрос.'
+                        : 'Сообщение отправляется клавишей ввода.'}
                   </Typography.Text>
-                </Space>
+                </div>
               </div>
             </div>
           </div>

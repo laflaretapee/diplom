@@ -12,7 +12,7 @@ services:
 
   nginx:
     command: >
-      sh -c "rm -f /etc/nginx/conf.d/default.conf &&
+      sh -c "envsubst '$$NGINX_SERVER_NAME' < /etc/nginx/templates/prod.conf.template > /etc/nginx/conf.d/prod.conf &&
       nginx -g 'daemon off;'"
     ports:
       - "443:443"

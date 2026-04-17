@@ -37,6 +37,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { apiClient } from '../api/client';
+import { KanbanTelegramGuide } from '../components/KanbanTelegramGuide';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type BoardColumn = {
   id: string;
@@ -136,6 +138,7 @@ type CardDetailsFormValues = {
 function DraggableCard(props: {
   card: CardItem;
   onOpen: (card: CardItem) => void;
+  compact?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `card:${props.card.id}`,
@@ -152,6 +155,7 @@ function DraggableCard(props: {
         cursor: 'grab',
         marginBottom: 12,
       }}
+      styles={{ body: { padding: props.compact ? 12 : 16 } }}
       {...listeners}
       {...attributes}
     >
@@ -176,6 +180,7 @@ function DroppableColumn(props: {
   cards: CardItem[];
   onOpenCard: (card: CardItem) => void;
   onCreateCard: (columnId: string) => void;
+  isMobile: boolean;
 }) {
   const { setNodeRef } = useDroppable({
     id: `column:${props.column.id}`,
@@ -186,14 +191,18 @@ function DroppableColumn(props: {
     <div
       ref={setNodeRef}
       style={{
-        minWidth: 300,
+        minWidth: props.isMobile ? 'min(84vw, 320px)' : 300,
+        width: props.isMobile ? 'min(84vw, 320px)' : 300,
         background: 'rgba(19, 19, 19, 0.75)',
         border: '1px solid rgba(79, 69, 56, 0.35)',
         borderRadius: 18,
         padding: 16,
+        scrollSnapAlign: props.isMobile ? 'start' : undefined,
+        minHeight: props.isMobile ? 172 : 220,
       }}
     >
       <Space
+        wrap
         style={{
           width: '100%',
           justifyContent: 'space-between',
@@ -217,8 +226,20 @@ function DroppableColumn(props: {
         </Button>
       </Space>
       {props.cards.map((card) => (
-        <DraggableCard key={card.id} card={card} onOpen={props.onOpenCard} />
+        <DraggableCard
+          key={card.id}
+          card={card}
+          onOpen={props.onOpenCard}
+          compact={props.isMobile}
+        />
       ))}
+      {!props.cards.length ? (
+        <Typography.Text type="secondary">
+          {props.isMobile
+            ? 'Пусто. Добавьте карточку или свайпните к другой колонке.'
+            : 'Пусто. Добавьте карточку в эту колонку.'}
+        </Typography.Text>
+      ) : null}
     </div>
   );
 }
@@ -250,6 +271,7 @@ export function KanbanBoardPage() {
   const params = useParams<{ boardId: string }>();
   const boardId = params.boardId ?? '';
   const navigate = useNavigate();
+  const isMobile = useIsMobileLayout();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [cardsState, setCardsState] = useState<CardsByColumn>({});
@@ -516,24 +538,45 @@ export function KanbanBoardPage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       {contextHolder}
-      <Card>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+      <Card styles={{ body: { padding: isMobile ? 16 : 24 } }}>
+        <Space
+          direction={isMobile ? 'vertical' : 'horizontal'}
+          size={12}
+          style={{ width: '100%', justifyContent: 'space-between' }}
+          wrap={!isMobile}
+        >
           <Space direction="vertical" size={4}>
-            <Typography.Title level={3} style={{ margin: 0 }}>
+            <Typography.Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
               {boardQuery.data.name}
             </Typography.Title>
             <Typography.Text type="secondary">
               {boardQuery.data.description || 'Описание не задано'}
             </Typography.Text>
+            {isMobile ? (
+              <Typography.Text type="secondary">
+                Свайпайте по колонкам влево и вправо, чтобы просматривать этапы доски.
+              </Typography.Text>
+            ) : null}
           </Space>
-          <Button icon={<PlusOutlined />} onClick={() => setIsColumnModalOpen(true)}>
+          <Button icon={<PlusOutlined />} onClick={() => setIsColumnModalOpen(true)} block={isMobile}>
             Колонка
           </Button>
         </Space>
       </Card>
 
+      <KanbanTelegramGuide compact />
+
       <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-        <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: isMobile ? 12 : 16,
+            overflowX: 'auto',
+            paddingBottom: 12,
+            scrollSnapType: isMobile ? 'x proximity' : undefined,
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {boardQuery.data.columns
             .slice()
             .sort((left, right) => left.position - right.position)
@@ -544,6 +587,7 @@ export function KanbanBoardPage() {
                 cards={(cardsState[column.id] ?? []).slice().sort((a, b) => a.position - b.position)}
                 onOpenCard={setSelectedCard}
                 onCreateCard={setCreateCardColumnId}
+                isMobile={isMobile}
               />
             ))}
         </div>
@@ -552,6 +596,7 @@ export function KanbanBoardPage() {
       <Modal
         title="Новая колонка"
         open={isColumnModalOpen}
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
         onCancel={() => {
           setIsColumnModalOpen(false);
           columnForm.resetFields();
@@ -576,6 +621,7 @@ export function KanbanBoardPage() {
       <Modal
         title="Новая карточка"
         open={Boolean(createCardColumnId)}
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
         onCancel={() => {
           setCreateCardColumnId(null);
           cardForm.resetFields();
@@ -595,10 +641,13 @@ export function KanbanBoardPage() {
       </Modal>
 
       <Drawer
-        width={520}
+        width={isMobile ? undefined : 520}
+        height={isMobile ? '92vh' : undefined}
+        placement={isMobile ? 'bottom' : 'right'}
         title={watchedTitle || selectedCard?.title || 'Карточка'}
         open={Boolean(selectedCard)}
         onClose={() => setSelectedCard(null)}
+        styles={{ body: { padding: isMobile ? 16 : 24 } }}
       >
         {selectedCard ? (
           <Space direction="vertical" size={20} style={{ width: '100%' }}>
@@ -653,7 +702,7 @@ export function KanbanBoardPage() {
               <Form.Item label="Теги" name="tags">
                 <Select mode="tags" tokenSeparators={[',']} />
               </Form.Item>
-              <Button type="primary" htmlType="submit" loading={updateCard.isPending}>
+              <Button type="primary" htmlType="submit" loading={updateCard.isPending} block={isMobile}>
                 Сохранить
               </Button>
             </Form>
@@ -684,6 +733,7 @@ export function KanbanBoardPage() {
                   type="primary"
                   onClick={() => addComment.mutate()}
                   disabled={!commentBody.trim()}
+                  block={isMobile}
                 >
                   Отправить
                 </Button>
@@ -707,7 +757,7 @@ export function KanbanBoardPage() {
                 }}
                 showUploadList={false}
               >
-                <Button>Загрузить файл</Button>
+                <Button block={isMobile}>Загрузить файл</Button>
               </Upload>
               <List
                 size="small"
@@ -761,7 +811,11 @@ export function KanbanBoardPage() {
                       }
                     />
                   ))}
-                  <Button onClick={() => saveCustomFields.mutate()} loading={saveCustomFields.isPending}>
+                  <Button
+                    onClick={() => saveCustomFields.mutate()}
+                    loading={saveCustomFields.isPending}
+                    block={isMobile}
+                  >
                     Сохранить поля
                   </Button>
                 </Space>

@@ -26,6 +26,7 @@ import { useEffect, useState } from 'react';
 
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../auth/store';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type DocumentItem = {
   id: string;
@@ -130,6 +131,7 @@ async function fetchAuditLog(filters: AuditFilters): Promise<AuditLogItem[]> {
 
 export function DocumentsPage() {
   const role = useAuthStore((state) => state.role);
+  const isMobile = useIsMobileLayout();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -371,19 +373,24 @@ export function DocumentsPage() {
               label: 'Документы',
               children: (
                 <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                  <Space wrap>
+                  <Space
+                    direction={isMobile ? 'vertical' : 'horizontal'}
+                    wrap={!isMobile}
+                    size={12}
+                    style={{ width: '100%' }}
+                  >
                     <Input.Search
                       allowClear
                       placeholder="Поиск по имени"
                       value={searchInput}
                       onChange={(event) => setSearchInput(event.target.value)}
-                      style={{ width: 280 }}
+                      style={{ width: isMobile ? '100%' : 280 }}
                     />
                     <Select
                       allowClear
                       placeholder="Категория"
                       options={categoryOptions}
-                      style={{ width: 180 }}
+                      style={{ width: isMobile ? '100%' : 180 }}
                       onChange={(value) =>
                         setDocumentFilters((current) => ({ ...current, category: value }))
                       }
@@ -392,7 +399,7 @@ export function DocumentsPage() {
                       allowClear
                       placeholder="Тип привязки"
                       options={entityOptions}
-                      style={{ width: 180 }}
+                      style={{ width: isMobile ? '100%' : 180 }}
                       onChange={(value) =>
                         setDocumentFilters((current) => ({ ...current, entity_type: value }))
                       }
@@ -402,6 +409,7 @@ export function DocumentsPage() {
                         type="primary"
                         icon={<UploadOutlined />}
                         onClick={() => setIsUploadOpen(true)}
+                        block={isMobile}
                       >
                         Загрузить документ
                       </Button>
@@ -422,6 +430,8 @@ export function DocumentsPage() {
                     dataSource={documentsQuery.data ?? []}
                     loading={documentsQuery.isLoading}
                     pagination={{ pageSize: 10 }}
+                    scroll={{ x: 920 }}
+                    size={isMobile ? 'small' : 'middle'}
                   />
                 </Space>
               ),
@@ -433,7 +443,12 @@ export function DocumentsPage() {
                     label: 'Журнал',
                     children: (
                       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                        <Space wrap>
+                        <Space
+                          direction={isMobile ? 'vertical' : 'horizontal'}
+                          wrap={!isMobile}
+                          size={12}
+                          style={{ width: '100%' }}
+                        >
                           <Select
                             allowClear
                             placeholder="Действие"
@@ -442,12 +457,15 @@ export function DocumentsPage() {
                               { value: 'download', label: 'download' },
                               { value: 'delete', label: 'delete' },
                             ]}
-                            style={{ width: 180 }}
+                            style={{ width: isMobile ? '100%' : 180 }}
                             onChange={(value) =>
                               setAuditFilters((current) => ({ ...current, action: value }))
                             }
                           />
-                          <DatePicker.RangePicker onChange={handleAuditRangeChange} />
+                          <DatePicker.RangePicker
+                            onChange={handleAuditRangeChange}
+                            style={{ width: isMobile ? '100%' : undefined }}
+                          />
                         </Space>
 
                         {auditQuery.isError ? (
@@ -464,6 +482,8 @@ export function DocumentsPage() {
                           dataSource={auditQuery.data ?? []}
                           loading={auditQuery.isLoading}
                           pagination={{ pageSize: 10 }}
+                          scroll={{ x: 760 }}
+                          size={isMobile ? 'small' : 'middle'}
                         />
                       </Space>
                     ),
@@ -477,6 +497,7 @@ export function DocumentsPage() {
       <Modal
         title="Загрузка документа"
         open={isUploadOpen}
+        width={isMobile ? 'calc(100vw - 24px)' : 560}
         onCancel={() => {
           setIsUploadOpen(false);
           setSelectedFile(null);

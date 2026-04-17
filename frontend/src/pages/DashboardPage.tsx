@@ -15,6 +15,7 @@ import { apiClient } from '../api/client';
 import { roleMeta } from '../auth/roleMeta';
 import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -154,22 +155,28 @@ function SectionStateBlock({
   description: string;
   action?: ReactNode;
 }) {
+  const isMobile = useIsMobileLayout();
+
   return (
     <div
       style={{
-        minHeight: 150,
+        minHeight: isMobile ? 132 : 150,
         borderRadius: 14,
         border: '1px dashed #353534',
         background: '#1A1A1A',
-        padding: 20,
+        padding: isMobile ? 16 : 20,
         display: 'grid',
         placeItems: 'center',
         textAlign: 'center',
       }}
     >
       <Space direction="vertical" size={12} style={{ width: '100%', maxWidth: 440 }}>
-        <Typography.Text style={{ color: '#E5E2E1', fontSize: 14, fontWeight: 600 }}>{title}</Typography.Text>
-        <Typography.Text style={{ color: '#8F8578', fontSize: 12, lineHeight: 1.6 }}>{description}</Typography.Text>
+        <Typography.Text style={{ color: '#E5E2E1', fontSize: isMobile ? 13 : 14, fontWeight: 600 }}>
+          {title}
+        </Typography.Text>
+        <Typography.Text style={{ color: '#8F8578', fontSize: 12, lineHeight: 1.6 }}>
+          {description}
+        </Typography.Text>
         {action}
       </Space>
     </div>
@@ -309,10 +316,15 @@ function MetricCard({
   hint?: string;
   tone?: 'amber' | 'red' | 'default';
 }) {
+  const isMobile = useIsMobileLayout();
   const accent = tone === 'red' ? '#ff7d7d' : tone === 'amber' ? '#FFD598' : '#E5E2E1';
 
   return (
-    <Card bordered={false} style={{ ...PANEL_STYLE, height: '100%' }} styles={{ body: { padding: 20 } }}>
+    <Card
+      bordered={false}
+      style={{ ...PANEL_STYLE, height: '100%' }}
+      styles={{ body: { padding: isMobile ? 14 : 20 } }}
+    >
       <Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
         <div style={{ minWidth: 0 }}>
           <Typography.Text
@@ -332,9 +344,12 @@ function MetricCard({
               marginTop: 8,
               color: '#E5E2E1',
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: 30,
+              fontSize: isMobile ? 22 : 30,
               fontWeight: 700,
               lineHeight: 1.1,
+              whiteSpace: isMobile ? 'nowrap' : 'normal',
+              overflow: isMobile ? 'hidden' : 'visible',
+              textOverflow: isMobile ? 'ellipsis' : 'clip',
             }}
           >
             {value}
@@ -348,8 +363,8 @@ function MetricCard({
         <div
           style={{
             flex: '0 0 auto',
-            width: 42,
-            height: 42,
+            width: isMobile ? 36 : 42,
+            height: isMobile ? 36 : 42,
             borderRadius: 10,
             border: '1px solid #353534',
             background: 'linear-gradient(180deg, rgba(255, 213, 152, 0.14), rgba(255, 213, 152, 0.06))',
@@ -376,12 +391,19 @@ function SectionCard({
   extra?: ReactNode;
   children: ReactNode;
 }) {
+  const isMobile = useIsMobileLayout();
+
   return (
-    <Card bordered={false} style={PANEL_STYLE} styles={{ body: { padding: 20 } }}>
+    <Card bordered={false} style={PANEL_STYLE} styles={{ body: { padding: isMobile ? 16 : 20 } }}>
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
+        <Space
+          direction={isMobile ? 'vertical' : 'horizontal'}
+          style={{ width: '100%', justifyContent: 'space-between' }}
+          align="start"
+          size={isMobile ? 8 : 12}
+        >
           <div>
-            <Typography.Title level={4} style={{ margin: 0, color: '#E5E2E1' }}>
+            <Typography.Title level={isMobile ? 5 : 4} style={{ margin: 0, color: '#E5E2E1' }}>
               {title}
             </Typography.Title>
             {subtitle ? <Typography.Text style={{ color: '#8F8578' }}>{subtitle}</Typography.Text> : null}
@@ -429,6 +451,7 @@ function BarRow({
 }
 
 export function DashboardPage() {
+  const isMobile = useIsMobileLayout();
   const token = useAuthStore((state) => state.token);
   const name = useAuthStore((state) => state.name);
   const role = useAuthStore((state) => state.role);
@@ -568,12 +591,22 @@ export function DashboardPage() {
   const meta = roleMeta[role];
 
   return (
-    <Space direction="vertical" size={24} style={{ width: '100%', color: '#E5E2E1' }}>
-      <Card bordered={false} style={DASHBOARD_SHELL_STYLE} styles={{ body: { padding: 24 } }}>
+    <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: '100%', color: '#E5E2E1' }}>
+      <Card
+        bordered={false}
+        style={DASHBOARD_SHELL_STYLE}
+        styles={{ body: { padding: isMobile ? 16 : 24 } }}
+      >
         <Space direction="vertical" size={14} style={{ width: '100%' }}>
-          <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start" wrap>
+          <Space
+            direction={isMobile ? 'vertical' : 'horizontal'}
+            style={{ width: '100%', justifyContent: 'space-between' }}
+            align="start"
+            wrap={!isMobile}
+            size={12}
+          >
             <div>
-              <Typography.Title level={3} style={{ margin: 0, color: '#FFD598' }}>
+              <Typography.Title level={isMobile ? 4 : 3} style={{ margin: 0, color: '#FFD598' }}>
                 {pointCentric ? 'Дашборд точки' : 'Дашборд сети'}
               </Typography.Title>
               <Typography.Text style={{ color: '#BFB6A8' }}>
@@ -581,7 +614,7 @@ export function DashboardPage() {
                 {name ? ` • ${name}` : ''}
               </Typography.Text>
             </div>
-            <Space wrap>
+            <Space direction={isMobile ? 'vertical' : 'horizontal'} wrap={!isMobile} style={{ width: isMobile ? '100%' : undefined }}>
               <Tag
                 color="default"
                 style={{
@@ -598,6 +631,7 @@ export function DashboardPage() {
                 icon={<ReloadOutlined />}
                 onClick={handleRefresh}
                 loading={refreshing}
+                block={isMobile}
                 style={{
                   background: '#2A2A2A',
                   color: '#E5E2E1',
@@ -650,7 +684,7 @@ export function DashboardPage() {
                   height: '100%',
                   background: '#1A1A1A',
                 }}
-                styles={{ body: { padding: 14 } }}
+                styles={{ body: { padding: isMobile ? 12 : 14 } }}
               >
                 <Space direction="vertical" size={4} style={{ width: '100%' }}>
                   <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
@@ -762,6 +796,7 @@ function NetworkDashboardCard({
   onRetryChannels: () => void;
   onRetryDishes: () => void;
 }) {
+  const isMobile = useIsMobileLayout();
   const safeRevenue = Array.isArray(revenue) ? revenue : [];
   const safeChannels = Array.isArray(channels) ? channels : [];
   const safeDishes = Array.isArray(dishes) ? dishes : [];
@@ -787,8 +822,12 @@ function NetworkDashboardCard({
   const networkDegraded = revenueDegraded || channelsDegraded || dishesDegraded;
 
   return (
-    <Space direction="vertical" size={24} style={{ width: '100%' }}>
-      <Card bordered={false} style={PANEL_STYLE} styles={{ body: { padding: 16 } }}>
+    <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: '100%' }}>
+      <Card
+        bordered={false}
+        style={PANEL_STYLE}
+        styles={{ body: { padding: isMobile ? 14 : 16 } }}
+      >
         <Space align="center" size={10} wrap style={{ width: '100%', justifyContent: 'space-between' }}>
           <div>
             <Typography.Text style={{ color: '#E5E2E1', fontWeight: 600 }}>
@@ -816,7 +855,7 @@ function NetworkDashboardCard({
       </Card>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Выручка"
             value={revenueInitialLoading ? 'Загрузка...' : revenueError && !revenueHasData ? 'Недоступно' : formatMoney(totalRevenue)}
@@ -835,7 +874,7 @@ function NetworkDashboardCard({
             tone={revenueError && !revenueHasData ? 'red' : 'amber'}
           />
         </Col>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Заказы"
             value={revenueInitialLoading ? 'Загрузка...' : revenueError && !revenueHasData ? 'Недоступно' : formatMonoNumber(totalOrders)}
@@ -852,7 +891,7 @@ function NetworkDashboardCard({
             tone={revenueError && !revenueHasData ? 'red' : 'default'}
           />
         </Col>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Точек в контуре"
             value={revenueInitialLoading ? 'Загрузка...' : revenueError && !revenueHasData ? 'Недоступно' : formatMonoNumber(scopePoints)}
@@ -871,7 +910,7 @@ function NetworkDashboardCard({
             tone={revenueError && !revenueHasData ? 'red' : 'default'}
           />
         </Col>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Средний чек"
             value={revenueInitialLoading ? 'Загрузка...' : revenueError && !revenueHasData ? 'Недоступно' : formatMoney(avgTicket)}
@@ -1201,6 +1240,7 @@ function PointDashboardCard({
   onRetrySummary: () => void;
   onRetryChannels: () => void;
 }) {
+  const isMobile = useIsMobileLayout();
   const safeChannels = Array.isArray(channels) ? channels : [];
   const maxChannelOrders = Math.max(1, ...safeChannels.map((item) => item.order_count));
   const summaryHasData = Boolean(summary);
@@ -1211,8 +1251,12 @@ function PointDashboardCard({
   const channelsDegraded = Boolean(channelsError) && channelsHasData;
 
   return (
-    <Space direction="vertical" size={24} style={{ width: '100%' }}>
-      <Card bordered={false} style={PANEL_STYLE} styles={{ body: { padding: 16 } }}>
+    <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: '100%' }}>
+      <Card
+        bordered={false}
+        style={PANEL_STYLE}
+        styles={{ body: { padding: isMobile ? 14 : 16 } }}
+      >
         <Space align="center" size={10} wrap style={{ width: '100%', justifyContent: 'space-between' }}>
           <div>
             <Typography.Text style={{ color: '#E5E2E1', fontWeight: 600 }}>
@@ -1251,7 +1295,7 @@ function PointDashboardCard({
       </Card>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Заказы за сегодня"
             value={summaryInitialLoading ? 'Загрузка...' : summaryError && !summaryHasData ? 'Недоступно' : formatMonoNumber(summary?.total_orders_today ?? 0)}
@@ -1268,7 +1312,7 @@ function PointDashboardCard({
             tone={summaryError && !summaryHasData ? 'red' : 'default'}
           />
         </Col>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Выручка за сегодня"
             value={summaryInitialLoading ? 'Загрузка...' : summaryError && !summaryHasData ? 'Недоступно' : formatMoney(summary?.total_revenue_today ?? 0)}
@@ -1285,7 +1329,7 @@ function PointDashboardCard({
             tone={summaryError && !summaryHasData ? 'red' : 'default'}
           />
         </Col>
-        <Col xs={24} sm={12} xl={6}>
+        <Col xs={12} sm={12} xl={6}>
           <MetricCard
             title="Активные заказы"
             value={summaryInitialLoading ? 'Загрузка...' : summaryError && !summaryHasData ? 'Недоступно' : formatMonoNumber(summary?.pending_orders ?? 0)}

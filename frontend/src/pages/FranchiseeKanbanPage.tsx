@@ -28,6 +28,7 @@ import dayjs from 'dayjs';
 
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../auth/store';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { ensureArray } from '../utils/ensureArray';
 
 type FranchiseeStatus =
@@ -255,6 +256,7 @@ function FranchiseeCard({
 }
 
 export function FranchiseeKanbanPage() {
+  const isMobile = useIsMobileLayout();
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
   const queryClient = useQueryClient();
@@ -620,7 +622,12 @@ export function FranchiseeKanbanPage() {
   return (
     <Space direction="vertical" size={24} style={{ width: '100%' }}>
       {contextHolder}
-      <Space style={{ justifyContent: 'space-between', width: '100%' }} wrap>
+      <Space
+        direction={isMobile ? 'vertical' : 'horizontal'}
+        size={12}
+        style={{ justifyContent: 'space-between', width: '100%' }}
+        wrap={!isMobile}
+      >
         <div>
           <Typography.Title level={3} style={{ marginBottom: 4 }}>
             Воронка франчайзи
@@ -646,15 +653,26 @@ export function FranchiseeKanbanPage() {
           <Spin tip="Загрузка франчайзи" />
         </Card>
       ) : (
-        <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: isMobile ? 12 : 16,
+            overflowX: 'auto',
+            paddingBottom: 12,
+            scrollSnapType: isMobile ? 'x proximity' : undefined,
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {columns.map((column) => (
             <div
               key={column.status}
               style={{
-                minWidth: 280,
+                minWidth: isMobile ? 'min(84vw, 300px)' : 280,
+                width: isMobile ? 'min(84vw, 300px)' : 280,
                 background: '#f5f5f5',
                 borderRadius: 14,
                 padding: 12,
+                scrollSnapAlign: isMobile ? 'start' : undefined,
               }}
             >
               <Space
@@ -703,6 +721,7 @@ export function FranchiseeKanbanPage() {
       <Modal
         title="Добавить франчайзи"
         open={isCreateOpen}
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
         okText="Сохранить"
         cancelText="Отмена"
         onCancel={() => {
@@ -745,6 +764,7 @@ export function FranchiseeKanbanPage() {
       <Modal
         title="Добавить задачу"
         open={isCreateTaskOpen}
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
         okText="Сохранить"
         cancelText="Отмена"
         onCancel={() => { setIsCreateTaskOpen(false); createTaskForm.resetFields(); }}
@@ -808,7 +828,9 @@ export function FranchiseeKanbanPage() {
           attachForm.resetFields();
           createPointForm.resetFields();
         }}
-        width={520}
+        placement={isMobile ? 'bottom' : 'right'}
+        width={isMobile ? undefined : 520}
+        height={isMobile ? '92vh' : undefined}
         styles={{ body: { padding: 16 } }}
       >
         {!selectedFranchisee ? (
@@ -825,6 +847,7 @@ export function FranchiseeKanbanPage() {
               />
             ) : null}
             <Tabs
+              size={isMobile ? 'small' : 'middle'}
               items={[
                 {
                   key: 'overview',

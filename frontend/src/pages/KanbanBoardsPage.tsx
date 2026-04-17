@@ -19,6 +19,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { apiClient } from '../api/client';
+import { KanbanTelegramGuide } from '../components/KanbanTelegramGuide';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type BoardItem = {
   id: string;
@@ -42,6 +44,7 @@ async function fetchBoards(): Promise<BoardItem[]> {
 
 export function KanbanBoardsPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobileLayout();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,9 +88,9 @@ export function KanbanBoardsPage() {
   return (
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       {contextHolder}
-      <Card>
+      <Card styles={{ body: { padding: isMobile ? 16 : 24 } }}>
         <Space direction="vertical" size={4}>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
             Канбан-доски
           </Typography.Title>
           <Typography.Text type="secondary">
@@ -96,12 +99,24 @@ export function KanbanBoardsPage() {
         </Space>
       </Card>
 
-      <Card>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+      <KanbanTelegramGuide />
+
+      <Card styles={{ body: { padding: isMobile ? 16 : 24 } }}>
+        <Space
+          direction={isMobile ? 'vertical' : 'horizontal'}
+          size={12}
+          style={{ width: '100%', justifyContent: 'space-between' }}
+          wrap={!isMobile}
+        >
           <Typography.Title level={4} style={{ margin: 0 }}>
             Доступные доски
           </Typography.Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalOpen(true)}
+            block={isMobile}
+          >
             Создать доску
           </Button>
         </Space>
@@ -118,6 +133,7 @@ export function KanbanBoardsPage() {
               <Card
                 hoverable
                 onClick={() => navigate(`/kanban/${board.id}`)}
+                styles={{ body: { padding: isMobile ? 16 : 24 } }}
                 actions={[
                   <Popconfirm
                     key="delete"
@@ -144,7 +160,11 @@ export function KanbanBoardsPage() {
                   <Typography.Title level={4} style={{ margin: 0 }}>
                     {board.name}
                   </Typography.Title>
-                  <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  <Typography.Paragraph
+                    type="secondary"
+                    style={{ marginBottom: 0 }}
+                    ellipsis={{ rows: isMobile ? 2 : 3 }}
+                  >
                     {board.description || 'Описание не задано'}
                   </Typography.Paragraph>
                   <Typography.Text type="secondary">
@@ -167,6 +187,7 @@ export function KanbanBoardsPage() {
       <Modal
         title="Создать доску"
         open={isModalOpen}
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
         onCancel={() => {
           setIsModalOpen(false);
           form.resetFields();

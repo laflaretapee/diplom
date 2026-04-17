@@ -7,6 +7,7 @@ import { loginWithSession } from '../auth/api';
 import { resolvePostLoginPath } from '../auth/routes';
 import { useAuthStore } from '../auth/store';
 import type { LoginRequest } from '../auth/types';
+import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type LoginFormValues = LoginRequest;
 
@@ -33,6 +34,7 @@ function getAuthErrorMessage(error: unknown): string {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobileLayout();
   const status = useAuthStore((state) => state.status);
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
@@ -84,9 +86,10 @@ export function LoginPage() {
             background: '#161616',
             border: '1px solid #2A2A2A',
           }}
+          styles={{ body: { padding: isMobile ? 20 : 24 } }}
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Typography.Title level={2} style={{ marginBottom: 0, color: '#E5E2E1' }}>
+            <Typography.Title level={isMobile ? 3 : 2} style={{ marginBottom: 0, color: '#E5E2E1' }}>
               Вход в Japonica CRM
             </Typography.Title>
             <Typography.Text style={{ color: '#BFB6A8' }}>

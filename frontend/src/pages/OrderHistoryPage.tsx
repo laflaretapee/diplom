@@ -465,6 +465,7 @@ export function OrderHistoryPage() {
                 ),
               }}
               pagination={{ pageSize: 20 }}
+              scroll={{ x: 1120 }}
             />
           </Spin>
         )}

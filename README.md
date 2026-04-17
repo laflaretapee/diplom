@@ -82,9 +82,10 @@ Key variables are documented in `.env.example`.
 
 Important groups:
 
-- app/runtime: `APP_ENV`, `API_PREFIX`, `VITE_API_BASE_URL`
+- app/runtime: `APP_ENV`, `API_PREFIX`, `VITE_API_BASE_URL`, `FRONTEND_ORIGIN`, `VITE_ALLOWED_HOSTS`
 - database/redis: `DATABASE_URL`, `REDIS_URL`
 - auth: `JWT_SECRET_KEY`, `JWT_REFRESH_SECRET_KEY`
+- inbound: `INBOUND_API_KEY`
 - notifications: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`
 - AI: `AI_BACKEND`, `QWEN_*`, `OLLAMA_*`
 - security: `COOKIE_SECURE`, `COOKIE_SAMESITE`, rate-limit settings

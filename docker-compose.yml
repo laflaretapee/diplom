@@ -118,6 +118,9 @@ services:
     environment:
       NODE_ENV: development
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost}
+      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-localhost}
+      VITE_ALLOWED_HOSTS: ${VITE_ALLOWED_HOSTS:-}
     volumes:
       - ./:/workspace
       - frontend_node_modules:/workspace/frontend/node_modules
