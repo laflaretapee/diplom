@@ -24,7 +24,7 @@ celery_app.conf.update(
     beat_schedule={
         "check-overdue-cards": {
             "task": "app.modules.kanban.tasks.check_overdue_cards",
-            "schedule": 30 * 60,
+            "schedule": 5 * 60,  # every 5 minutes
         },
         "process-outbox-events": {
             "task": "app.modules.kanban.tasks.process_outbox_events",

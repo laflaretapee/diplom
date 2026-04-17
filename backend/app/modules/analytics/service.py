@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
@@ -883,40 +884,64 @@ async def answer_assistant_question(
 
     provider = build_ai_provider()
     system_prompt = (
-        "Ты AI-аналитик Japonica CRM. Отвечай только по предоставленным числам и фактам. "
-        "Не выдумывай отсутствующие данные. Давай короткий управленческий вывод и 1-3 действия."
+        "Ты — ИИ-ассистент CRM-системы Japonica для управления ресторанной франшизой. "
+        "Ты можешь отвечать на любые вопросы: общие, бытовые, аналитические. "
+        "Если вопрос касается бизнеса, аналитики, выручки, заказов или склада — "
+        "используй предоставленные данные CRM и давай конкретный управленческий вывод. "
+        "Если вопрос общий или не связан с бизнесом — отвечай естественно и дружелюбно, "
+        "как обычный умный ассистент, без навязывания аналитического контекста."
     )
-    user_prompt = "\n".join(
-        [
-            f"Вопрос: {question}",
-            f"Контекст: {scope.context_scope}",
-            "Доказательства:",
-            *[
-                f"- {item.label}: {item.value}"
-                + (f" ({item.detail})" if item.detail else "")
-                for item in evidence
-            ],
-            "Сигналы:",
-            *[
-                f"- {signal.title}: {signal.description}. "
-                f"Текущее={signal.current_value}, базовое={signal.baseline_value or 'n/a'}"
-                for signal in anomalies.signals
-            ],
-            "Рекомендации:",
-            *[f"- {suggestion}" for suggestion in suggestions],
-        ]
+
+    _analytics_keywords = (
+        "выручк", "заказ", "склад", "остат", "аномал", "блюд", "прогноз",
+        "канал", "продаж", "прибыл", "точк", "франчайз", "показател",
+        "риск", "отчёт", "отчет", "сводк", "динамик", "падени", "рост",
+        "revenue", "order", "stock", "forecast", "anomal",
     )
+    question_lower = question.lower()
+    is_analytics_question = any(kw in question_lower for kw in _analytics_keywords)
+
+    if is_analytics_question and evidence:
+        crm_context = "\n".join(
+            [
+                f"\nДанные CRM (контекст: {scope.context_scope}):",
+                *[
+                    f"- {item.label}: {item.value}"
+                    + (f" ({item.detail})" if item.detail else "")
+                    for item in evidence
+                ],
+                *(
+                    ["Сигналы:"]
+                    + [
+                        f"- {signal.title}: {signal.description}. "
+                        f"Текущее={signal.current_value}, базовое={signal.baseline_value or 'n/a'}"
+                        for signal in anomalies.signals
+                    ]
+                    if anomalies.signals
+                    else []
+                ),
+                *(
+                    ["Рекомендации:"] + [f"- {s}" for s in suggestions]
+                    if suggestions
+                    else []
+                ),
+            ]
+        )
+        user_prompt = f"Вопрос: {question}{crm_context}"
+    else:
+        user_prompt = question
 
     try:
         completion = await provider.generate(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            temperature=0.2,
+            temperature=0.7 if not is_analytics_question else 0.2,
         )
         answer = completion.content.strip() or fallback_answer
         provider_name = completion.provider
         used_fallback = False
-    except Exception:
+    except Exception as exc:
+        logging.getLogger(__name__).error("AI provider error: %s", exc, exc_info=True)
         answer = fallback_answer
         provider_name = provider.provider
         used_fallback = True

@@ -130,49 +130,79 @@ async def _send_deadline(card_id: str) -> None:
 
 
 async def _check_overdue() -> None:
+    """Legacy overdue check — kept for compatibility. Full logic is in _run_deadline_checks."""
+    from backend.app.modules.kanban.notifications import notify_deadline_reminder
+
     now = datetime.now(tz=timezone.utc)
     async for db in _get_task_session():
         result = await db.execute(
             select(Card).where(
                 Card.deadline.is_not(None),
-                Card.deadline < now,
-                Card.assignee_id.is_not(None),
+                Card.status.not_in(["done"]),
             )
         )
-        overdue_cards = result.scalars().all()
+        cards = result.scalars().all()
 
-        for card in overdue_cards:
-            board_result = await db.execute(select(Board.name).where(Board.id == card.board_id))
-            board_name = board_result.scalar_one_or_none() or "Kanban"
-            user_result = await db.execute(
-                select(User).where(
-                    User.id == card.assignee_id,
-                    User.is_active.is_(True),
+        for card in cards:
+            deadline = card.deadline
+            if deadline.tzinfo is None:
+                deadline = deadline.replace(tzinfo=timezone.utc)
+
+            diff = deadline - now
+
+            reminders: list[str] = []
+
+            if diff.total_seconds() > 0:
+                days = diff.days
+                if 0 <= days <= 1:
+                    reminders.append("deadline_1d")
+                if 2 <= days <= 3:
+                    reminders.append("deadline_3d")
+                if 6 <= days <= 7:
+                    reminders.append("deadline_7d")
+                if 0 <= diff.total_seconds() <= 3600:
+                    reminders.append("deadline_due")
+            else:
+                overdue_hours = abs(diff.total_seconds()) / 3600
+
+                if not card.overdue:
+                    from sqlalchemy import update
+
+                    await db.execute(
+                        update(Card).where(Card.id == card.id).values(overdue=True)
+                    )
+
+                if overdue_hours <= 2:
+                    reminders.append("deadline_overdue_1h")
+                if overdue_hours >= 24:
+                    reminders.append("deadline_escalation_24h")
+
+            escalate_to = None
+            if "deadline_escalation_24h" in reminders:
+                from backend.app.models.user import UserRole
+
+                mgr_result = await db.execute(
+                    select(User).where(
+                        User.role.in_([UserRole.SUPER_ADMIN, UserRole.FRANCHISEE]),
+                        User.is_active.is_(True),
+                        User.telegram_chat_id.is_not(None),
+                    ).limit(1)
                 )
-            )
-            user = user_result.scalar_one_or_none()
-            if user is None:
-                continue
-            if not user.telegram_chat_id:
-                logger.warning(
-                    "Skipping overdue notification for card %s: user %s has no telegram_chat_id",
-                    card.id,
-                    user.id,
-                )
-                continue
-            if not notification_enabled(user, "kanban_card_overdue"):
-                continue
-            deadline_str = card.deadline.strftime("%d.%m.%Y %H:%M") if card.deadline else ""
-            msg = (
-                f"🚨 Карточка просрочена!\n"
-                f"*{card.title}*\n"
-                f"Доска: {board_name}\n"
-                f"Дедлайн был: {deadline_str}"
-            )
-            try:
-                await send_telegram_message(user.telegram_chat_id, msg)
-            except Exception:
-                logger.exception("Failed to send overdue notification for card %s", card.id)
+                mgr = mgr_result.scalar_one_or_none()
+                if mgr:
+                    escalate_to = mgr.id
+
+            for reminder_type in reminders:
+                try:
+                    await notify_deadline_reminder(
+                        db, card, reminder_type, escalate_to_id=escalate_to
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to send %s notification for card %s", reminder_type, card.id
+                    )
+
+        await db.commit()
 
 
 async def _process_outbox() -> None:

@@ -232,6 +232,7 @@ class KanbanBoardService:
             tags=data.tags,
             position=data.position,
             created_by=actor.id,
+            creator_id=actor.id,
         )
         self.db.add(card)
         await self.db.flush()
@@ -264,6 +265,7 @@ class KanbanBoardService:
         await self.db.commit()
         await self.db.refresh(card)
 
+        from backend.app.modules.kanban.notifications import notify_task_created
         from backend.app.modules.kanban.tasks import (
             send_card_assigned_notification,
             send_card_deadline_set_notification,
@@ -273,6 +275,15 @@ class KanbanBoardService:
             send_card_assigned_notification.delay(str(card.id), str(data.assignee_id))
         if data.deadline is not None:
             send_card_deadline_set_notification.delay(str(card.id))
+
+        try:
+            await notify_task_created(self.db, card)
+        except Exception:
+            import logging as _logging
+            _logging.getLogger(__name__).exception(
+                "notify_task_created failed for card %s", card.id
+            )
+
         return card
 
     async def list_cards_by_board(
@@ -297,9 +308,20 @@ class KanbanBoardService:
         actor: User,
         data: CardUpdate,
     ) -> Card:
+        import logging as _logging
+        from datetime import UTC
+        from datetime import datetime as _datetime
+
+        from backend.app.modules.kanban.notifications import (
+            notify_task_assigned,
+            notify_task_completed,
+            notify_task_returned,
+        )
+
         card = await self.get_card_or_404(card_id, actor)
         current_assignee = card.assignee_id
         current_deadline = card.deadline
+        current_status = card.status
         updates = data.model_dump(exclude_unset=True)
         for field, value in updates.items():
             setattr(card, field, value)
@@ -329,6 +351,13 @@ class KanbanBoardService:
             and card.deadline != current_deadline
         )
 
+        new_status = card.status
+        status_changed = "status" in updates and new_status != current_status
+
+        # Set completed_at when transitioning to in_review (completed by assignee)
+        if status_changed and new_status == "in_review" and card.completed_at is None:
+            card.completed_at = _datetime.now(UTC)
+
         await self.db.commit()
         await self.db.refresh(card)
 
@@ -339,8 +368,26 @@ class KanbanBoardService:
 
         if should_notify_assignee and card.assignee_id is not None:
             send_card_assigned_notification.delay(str(card.id), str(card.assignee_id))
+            try:
+                await notify_task_assigned(self.db, card, card.assignee_id, assigner_id=actor.id)
+            except Exception:
+                _logging.getLogger(__name__).exception(
+                    "notify_task_assigned failed for card %s", card.id
+                )
         if should_notify_deadline:
             send_card_deadline_set_notification.delay(str(card.id))
+
+        if status_changed:
+            try:
+                if new_status == "in_review":
+                    await notify_task_completed(self.db, card)
+                elif new_status == "in_progress" and current_status == "in_review":
+                    await notify_task_returned(self.db, card)
+            except Exception:
+                _logging.getLogger(__name__).exception(
+                    "status-change notification failed for card %s (new=%s)", card.id, new_status
+                )
+
         return card
 
     async def move_card(
@@ -429,6 +476,18 @@ class KanbanBoardService:
 
         await self.db.commit()
         await self.db.refresh(comment)
+
+        try:
+            from backend.app.modules.kanban.notifications import notify_comment_added
+
+            await notify_comment_added(self.db, card, actor.id, data.body)
+        except Exception:
+            import logging as _logging
+
+            _logging.getLogger(__name__).exception(
+                "notify_comment_added failed for card %s", card.id
+            )
+
         return comment
 
     async def list_comments(self, card_id: uuid.UUID, actor: User) -> list[CardComment]:

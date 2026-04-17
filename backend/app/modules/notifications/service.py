@@ -498,6 +498,90 @@ async def _handle_linked_command(
     return _build_help_text(user.name)
 
 
+async def _handle_task_callback(
+    db: AsyncSession, callback_data: str, chat_id: str
+) -> str:
+    """Обработка inline кнопок задач из Telegram."""
+    from datetime import UTC, datetime
+
+    from backend.app.modules.kanban.models import Card
+    from backend.app.modules.kanban.notifications import notify_task_completed, notify_task_returned
+    from backend.app.modules.kanban.state_machine import can_transition
+
+    parts = callback_data.split(":", 1)
+    if len(parts) != 2:
+        return "❓ Неизвестное действие"
+    action, card_id = parts
+
+    user_result = await db.execute(
+        select(User).where(User.telegram_chat_id == chat_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        return "❌ Ваш аккаунт не привязан к CRM. Используйте /link"
+
+    card_result = await db.execute(select(Card).where(Card.id == uuid.UUID(card_id)))
+    card = card_result.scalar_one_or_none()
+    if not card:
+        return "❌ Задача не найдена"
+
+    now = datetime.now(UTC)
+
+    if action == "task_accept":
+        if str(user.id) != str(card.assignee_id):
+            return "❌ Вы не являетесь исполнителем этой задачи"
+        if not can_transition(card.status, "in_progress"):
+            return f"❌ Нельзя перевести из '{card.status}' в 'in_progress'"
+        card.status = "in_progress"
+        card.accepted_at = now
+        await db.commit()
+        return "✅ Задача принята, переведена в работу"
+
+    elif action == "task_start":
+        if str(user.id) != str(card.assignee_id):
+            return "❌ Вы не являетесь исполнителем"
+        card.status = "in_progress"
+        await db.commit()
+        return "🚀 Задача переведена в работу"
+
+    elif action == "task_complete":
+        if str(user.id) != str(card.assignee_id):
+            return "❌ Только исполнитель может завершить задачу"
+        if can_transition(card.status, "in_review"):
+            card.status = "in_review"
+        elif can_transition(card.status, "done"):
+            card.status = "done"
+        else:
+            return f"❌ Нельзя завершить задачу со статусом '{card.status}'"
+        card.completed_at = now
+        await db.commit()
+        try:
+            await notify_task_completed(db, card)
+        except Exception:
+            logger.exception("notify_task_completed failed for card %s", card.id)
+        return "🏁 Задача отправлена на проверку"
+
+    elif action == "task_approve":
+        if str(user.id) not in [str(card.creator_id), str(card.reviewer_id)]:
+            return "❌ Только постановщик может принять результат"
+        card.status = "done"
+        await db.commit()
+        return "✔️ Задача принята и закрыта"
+
+    elif action == "task_return":
+        if str(user.id) not in [str(card.creator_id), str(card.reviewer_id)]:
+            return "❌ Только постановщик может вернуть задачу"
+        card.status = "in_progress"
+        await db.commit()
+        try:
+            await notify_task_returned(db, card)
+        except Exception:
+            logger.exception("notify_task_returned failed for card %s", card.id)
+        return "🔄 Задача возвращена в работу"
+
+    return "❓ Неизвестное действие"
+
+
 async def process_telegram_webhook(
     update: TelegramWebhookUpdate,
     db: AsyncSession,
@@ -509,6 +593,17 @@ async def process_telegram_webhook(
     chat_id, text = incoming
     stripped_text = text.strip()
     if not stripped_text:
+        return
+
+    # Handle task inline keyboard callbacks
+    if stripped_text.startswith("task_"):
+        try:
+            response_text = await _handle_task_callback(db, stripped_text, chat_id)
+        except Exception:
+            logger.exception("_handle_task_callback failed for data=%s", stripped_text)
+            response_text = "❌ Произошла ошибка при обработке команды"
+        if response_text:
+            await send_telegram_message(chat_id, response_text)
         return
 
     match = LINK_CODE_RE.match(stripped_text)
