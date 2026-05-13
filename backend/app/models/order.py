@@ -5,7 +5,7 @@ import uuid
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Numeric, Text
+from sqlalchemy import JSON, ForeignKey, Numeric, String, Text
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -51,6 +51,11 @@ class Order(UUIDMixin, TimestampMixin, Base):
         ForeignKey("points.id", ondelete="CASCADE"),
         nullable=False,
     )
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("customers.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status: Mapped[OrderStatus] = mapped_column(
         SAEnum(OrderStatus, name="order_status", native_enum=False),
         nullable=False,
@@ -71,4 +76,7 @@ class Order(UUIDMixin, TimestampMixin, Base):
     )
     items: Mapped[list[Any]] = mapped_column(JSON, nullable=False, default=list)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    delivery_address: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    payment_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    payment_invoice_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

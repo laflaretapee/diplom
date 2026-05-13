@@ -12,6 +12,7 @@ import {
   RobotOutlined,
   SolutionOutlined,
   SunOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { Button, Drawer, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -33,6 +34,7 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Дашборд' },
     { key: '/assistant', icon: <RobotOutlined />, label: 'ИИ-аналитик' },
     { key: '/dishes', icon: <AppstoreOutlined />, label: 'Блюда' },
+    { key: '/customers', icon: <UserOutlined />, label: 'Клиенты' },
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
     { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
@@ -43,6 +45,7 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
   franchisee: [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Дашборд' },
     { key: '/assistant', icon: <RobotOutlined />, label: 'ИИ-аналитик' },
+    { key: '/customers', icon: <UserOutlined />, label: 'Клиенты' },
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
     { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
@@ -51,6 +54,7 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
   ],
   point_manager: [
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
+    { key: '/customers', icon: <UserOutlined />, label: 'Клиенты' },
     { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'История заказов' },

@@ -7,6 +7,7 @@ import { RequireAuth } from './components/RequireAuth';
 import { getDefaultRouteForRole, getOrdersRouteForRole } from './auth/routes';
 import { useAuthStore } from './auth/store';
 import { AIAssistantPage } from './pages/AIAssistantPage';
+import { CustomersPage } from './pages/CustomersPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { DiaryPage } from './pages/DiaryPage';
 import { DishesPage } from './pages/DishesPage';
@@ -17,6 +18,7 @@ import { KanbanBoardsPage } from './pages/KanbanBoardsPage';
 import { LoginPage } from './pages/LoginPage';
 import { OrderHistoryPage } from './pages/OrderHistoryPage';
 import { OrderQueuePage } from './pages/OrderQueuePage';
+import { TelegramShopPage } from './pages/TelegramShopPage';
 import { WarehousePage } from './pages/WarehousePage';
 
 function RouteErrorFallback() {
@@ -117,6 +119,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomeRedirect /> },
       { path: 'login', element: <LoginPage /> },
+      { path: 'shop/telegram', element: <TelegramShopPage /> },
       {
         element: <RequireAuth />,
         children: [
@@ -126,6 +129,7 @@ const router = createBrowserRouter([
               { path: 'dashboard', element: <DashboardPage /> },
               { path: 'assistant', element: <AIAssistantPage /> },
               { path: 'dishes', element: <DishesPage /> },
+              { path: 'customers', element: <CustomersPage /> },
               { path: 'documents', element: <DocumentsPage /> },
               { path: 'kanban', element: <KanbanBoardsPage /> },
               { path: 'kanban/:boardId', element: <KanbanBoardPage /> },

@@ -19,9 +19,11 @@ class OrderItem(BaseModel):
 
 class OrderCreate(BaseModel):
     point_id: uuid.UUID
+    customer_id: uuid.UUID | None = None
     payment_type: PaymentType
     source_channel: SourceChannel
     items: list[OrderItem] = Field(min_length=1)
+    delivery_address: str | None = None
     notes: str | None = None
 
 
@@ -32,12 +34,16 @@ class OrderStatusUpdate(BaseModel):
 class OrderRead(BaseModel):
     id: uuid.UUID
     point_id: uuid.UUID
+    customer_id: uuid.UUID | None = None
     status: OrderStatus
     payment_type: PaymentType
     payment_status: PaymentStatus
     source_channel: SourceChannel
     items: list[Any]
     total_amount: Decimal
+    delivery_address: str | None = None
+    payment_provider: str | None = None
+    payment_invoice_id: str | None = None
     notes: str | None
     created_at: datetime
     updated_at: datetime

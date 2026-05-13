@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     inbound_api_key: str = "inbound-secret-key-change-me"
     telegram_bot_token: str = ""
     telegram_webhook_secret: str = "tg-webhook-secret"
+    telegram_mini_app_url: str = "http://localhost:5173/shop/telegram"
+    robokassa_merchant_login: str = "Test1999"
+    robokassa_password1: str = "password_1"
+    robokassa_password2: str = "password_2"
+    robokassa_is_test: bool = True
     ai_backend: str = "disabled"
     qwen_api_url: str = ""
     qwen_api_key: str = ""

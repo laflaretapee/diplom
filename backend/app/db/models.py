@@ -1,4 +1,5 @@
 from backend.app.core.events import DomainEventRecord
+from backend.app.models.customer import Customer
 from backend.app.models.dish import Dish
 from backend.app.models.dish_ingredient import DishIngredient
 from backend.app.models.franchisee import Franchisee  # noqa: F401
@@ -32,6 +33,7 @@ __all__ = [
     "DocumentAccessLog",
     "CustomFieldDefinition",
     "DomainEventRecord",
+    "Customer",
     "Dish",
     "DishIngredient",
     "Franchisee",

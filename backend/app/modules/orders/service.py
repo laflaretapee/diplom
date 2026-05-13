@@ -149,10 +149,12 @@ async def create_order(
 
     order = Order(
         point_id=data.point_id,
+        customer_id=data.customer_id,
         payment_type=data.payment_type,
         source_channel=data.source_channel,
         items=[item.model_dump(mode="json") for item in data.items],
         total_amount=total,
+        delivery_address=data.delivery_address,
         notes=data.notes,
     )
     db.add(order)
