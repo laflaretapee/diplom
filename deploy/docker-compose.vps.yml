@@ -5,7 +5,7 @@ services:
       COOKIE_SECURE: "true"
       COOKIE_SAMESITE: lax
       CORS_ORIGINS: '["https://${NGINX_SERVER_NAME:-localhost}"]'
-      TELEGRAM_MINI_APP_URL: "https://${NGINX_SERVER_NAME:-localhost}/shop/telegram"
+      SALES_TELEGRAM_MINI_APP_URL: "https://${NGINX_SERVER_NAME:-localhost}/shop/telegram"
 
   worker:
     environment:

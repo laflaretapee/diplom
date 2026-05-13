@@ -7,7 +7,7 @@ from fastapi import APIRouter, Header, HTTPException
 
 from backend.app.core.config import get_settings
 
-router = APIRouter(prefix="/telegram-bot", tags=["telegram-bot"])
+router = APIRouter(prefix="/sales-telegram", tags=["sales-telegram"])
 
 
 def build_dispatcher() -> Dispatcher:
@@ -21,7 +21,7 @@ def build_dispatcher() -> Dispatcher:
                 [
                     KeyboardButton(
                         text="Открыть меню",
-                        web_app=WebAppInfo(url=settings.telegram_mini_app_url),
+                        web_app=WebAppInfo(url=settings.sales_telegram_mini_app_url),
                     )
                 ]
             ],
@@ -43,12 +43,12 @@ async def aiogram_webhook(
     x_telegram_bot_api_secret_token: str | None = Header(default=None),
 ) -> dict[str, bool]:
     settings = get_settings()
-    if x_telegram_bot_api_secret_token != settings.telegram_webhook_secret:
+    if x_telegram_bot_api_secret_token != settings.sales_telegram_webhook_secret:
         raise HTTPException(status_code=403, detail="Invalid Telegram webhook secret")
-    if not settings.telegram_bot_token:
-        raise HTTPException(status_code=503, detail="Telegram bot token is not configured")
+    if not settings.sales_telegram_bot_token:
+        raise HTTPException(status_code=503, detail="Sales Telegram bot token is not configured")
 
-    bot = Bot(token=settings.telegram_bot_token)
+    bot = Bot(token=settings.sales_telegram_bot_token)
     dispatcher = build_dispatcher()
     await dispatcher.feed_update(bot, Update.model_validate(update))
     await bot.session.close()
