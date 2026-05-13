@@ -1,4 +1,4 @@
-# Japonica CRM — Agent Handoff Log
+# Джейсан — Agent Handoff Log
 
 > Файл для передачи контекста между сессиями. Обновляй при каждой значимой работе.
 
@@ -6,7 +6,7 @@
 
 ## Проект
 
-**Japonica CRM** — дипломная работа. Система управления сетью суши-ресторанов (франчайзинг).
+**Джейсан** — дипломная работа. Система управления сетью суши-ресторанов (франчайзинг).
 
 - Backend: FastAPI + SQLAlchemy 2.0 async + Alembic + Celery + Redis
 - Frontend: React 18 + TypeScript + Vite + Ant Design 5 + TanStack Query + Zustand

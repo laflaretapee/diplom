@@ -25,7 +25,7 @@ def create_application() -> FastAPI:
         title=settings.app_name,
         version="0.1.0",
         description=(
-            "Japonica CRM: modular FastAPI backend for auth, orders, warehouse, "
+            "Джейсан: modular FastAPI backend for auth, orders, warehouse, "
             "franchisee onboarding, notifications and analytics."
         ),
     )

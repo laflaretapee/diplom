@@ -936,7 +936,7 @@ export function AIAssistantPage() {
             </div>
             <div>
               <Typography.Title level={4} style={{ color: '#E8B86D', margin: 0 }}>
-                Japonica ИИ
+                Джейсан ИИ
               </Typography.Title>
               <Typography.Text style={{ color: '#9B8F7F', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
                 Аналитическая консоль

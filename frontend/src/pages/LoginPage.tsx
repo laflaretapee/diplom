@@ -90,7 +90,7 @@ export function LoginPage() {
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Typography.Title level={isMobile ? 3 : 2} style={{ marginBottom: 0, color: '#E5E2E1' }}>
-              Вход в Japonica CRM
+              Вход в Джейсан
             </Typography.Title>
             <Typography.Text style={{ color: '#BFB6A8' }}>
               Используйте свою рабочую учётную запись. После входа система откроет раздел,

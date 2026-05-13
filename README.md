@@ -1,6 +1,6 @@
-# Japonica CRM
+# Джейсан
 
-Japonica CRM is a modular monolith for franchise restaurant operations. It combines order management, warehouse control, franchisee onboarding, notifications, analytics, and an AI analyst interface in one stack.
+Джейсан is a modular monolith for franchise restaurant operations. It combines order management, warehouse control, franchisee onboarding, notifications, analytics, and an AI analyst interface in one stack.
 
 ## Stack
 

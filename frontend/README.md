@@ -1,6 +1,6 @@
-# Japonica CRM Frontend
+# Джейсан Frontend
 
-Minimal React 18 + TypeScript + Vite scaffold for the Japonica CRM UI.
+Minimal React 18 + TypeScript + Vite scaffold for the Джейсан UI.
 
 ## Included
 

@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Japonica CRM",
-    "description": "Japonica CRM: modular FastAPI backend for auth, orders, warehouse, franchisee onboarding, notifications and analytics.",
+    "title": "Джейсан",
+    "description": "Джейсан: modular FastAPI backend for auth, orders, warehouse, franchisee onboarding, notifications and analytics.",
     "version": "0.1.0"
   },
   "paths": {

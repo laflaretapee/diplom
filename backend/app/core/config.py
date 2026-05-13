@@ -11,7 +11,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "Japonica CRM"
+    app_name: str = "Джейсан"
     app_env: str = "development"
     api_prefix: str = "/api/v1"
     database_url: str = (

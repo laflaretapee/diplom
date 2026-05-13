@@ -109,28 +109,28 @@ USERS: tuple[UserSeed, ...] = (
         key="admin",
         email="admin@japonica.example.com",
         password="Admin1234!",
-        name="Japonica Demo Admin",
+        name="Джейсан Demo Admin",
         role=UserRole.SUPER_ADMIN,
     ),
     UserSeed(
         key="franchisee_ufa1",
         email="franchisee-ufa1@japonica.example.com",
         password="Demo1234!",
-        name="Japonica Demo Franchisee Ufa",
+        name="Джейсан Demo Franchisee Ufa",
         role=UserRole.FRANCHISEE,
     ),
     UserSeed(
         key="manager_ufa1",
         email="manager-ufa1@japonica.example.com",
         password="Demo1234!",
-        name="Japonica Demo Manager Ufa 1",
+        name="Джейсан Demo Manager Ufa 1",
         role=UserRole.POINT_MANAGER,
     ),
     UserSeed(
         key="staff_ufa1",
         email="staff-ufa1@japonica.example.com",
         password="Demo1234!",
-        name="Japonica Demo Staff Ufa 1",
+        name="Джейсан Demo Staff Ufa 1",
         role=UserRole.STAFF,
     ),
 )
@@ -148,7 +148,7 @@ FRANCHISEES: tuple[FranchiseeSeed, ...] = (
             {
                 "id": str(uuid.uuid5(DEMO_NAMESPACE, "note:ufa_active:0")),
                 "text": "Основной demo-франчайзи для показа кабинета партнера.",
-                "author": "Japonica Demo Admin",
+                "author": "Джейсан Demo Admin",
                 "created_at": "2026-03-01T08:00:00+00:00",
             }
         ],
@@ -165,7 +165,7 @@ FRANCHISEES: tuple[FranchiseeSeed, ...] = (
             {
                 "id": str(uuid.uuid5(DEMO_NAMESPACE, "note:samara_negotiation:0")),
                 "text": "Ожидаем финальное коммерческое предложение и пакет документов.",
-                "author": "Japonica Demo Admin",
+                "author": "Джейсан Demo Admin",
                 "created_at": "2026-03-10T09:30:00+00:00",
             }
         ],
@@ -182,7 +182,7 @@ FRANCHISEES: tuple[FranchiseeSeed, ...] = (
             {
                 "id": str(uuid.uuid5(DEMO_NAMESPACE, "note:perm_training:0")),
                 "text": "Команда проходит онбординг и обучение по стандартам кухни.",
-                "author": "Japonica Demo Admin",
+                "author": "Джейсан Demo Admin",
                 "created_at": "2026-03-15T11:00:00+00:00",
             }
         ],

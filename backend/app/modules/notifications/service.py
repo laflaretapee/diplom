@@ -169,7 +169,7 @@ def _format_decimal(value: Decimal) -> str:
 def _build_help_text(user_name: str) -> str:
     return "\n".join(
         [
-            f"Добро пожаловать в Japonica CRM, {user_name}!",
+            f"Добро пожаловать в Джейсан, {user_name}!",
             "",
             "Telegram mock-команды:",
             "/orders",

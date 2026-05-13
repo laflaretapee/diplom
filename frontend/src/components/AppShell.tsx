@@ -86,15 +86,15 @@ export function AppShell() {
   const isDark = useThemeStore((s) => s.isDark);
   const toggleTheme = useThemeStore((s) => s.toggle);
 
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [isMobile, location.pathname]);
+
   if (!role) {
     return <Navigate to="/login" replace />;
   }
 
   const meta = roleMeta[role];
-
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [isMobile, location.pathname]);
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     setIsMenuOpen(false);
@@ -127,11 +127,11 @@ export function AppShell() {
       </div>
       <div style={{ minWidth: 0 }}>
         <Typography.Title level={isMobile ? 5 : 3} style={{ color: '#E8B86D', margin: 0 }}>
-          Japonica
+          Джейсан
         </Typography.Title>
         <Typography.Text
           style={{
-            color: 'rgba(211, 196, 179, 0.68)',
+            color: isDark ? 'rgba(211, 196, 179, 0.68)' : '#817567',
             fontSize: 10,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
@@ -143,8 +143,11 @@ export function AppShell() {
     </Space>
   );
 
-  const siderBg = isDark ? '#0E0E0E' : '#FDFAF7';
-  const siderBorder = isDark ? 'rgba(79, 69, 56, 0.35)' : 'rgba(0,0,0,0.08)';
+  const siderBg = isDark ? '#0E0E0E' : '#FCF9F8';
+  const siderBorder = isDark ? 'rgba(79, 69, 56, 0.35)' : '#E5E2E1';
+  const pageBg = isDark
+    ? 'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, #131313 0%, #0E0E0E 100%)'
+    : 'linear-gradient(180deg, #FCF9F8 0%, #F6F3F2 100%)';
 
   const navigationMenu = (
     <Menu
@@ -191,7 +194,7 @@ export function AppShell() {
       <Layout>
         <Layout.Header
           style={{
-            background: isDark ? 'rgba(14, 14, 14, 0.72)' : 'rgba(253, 250, 247, 0.92)',
+            background: isDark ? 'rgba(14, 14, 14, 0.72)' : 'rgba(252, 249, 248, 0.92)',
             borderBottom: `1px solid ${siderBorder}`,
             backdropFilter: 'blur(18px)',
             display: 'flex',
@@ -223,9 +226,9 @@ export function AppShell() {
                     icon={<MenuOutlined />}
                     onClick={() => setIsMenuOpen(true)}
                     style={{
-                      color: '#E5E2E1',
-                      border: '1px solid rgba(79, 69, 56, 0.45)',
-                      background: '#181818',
+                      color: token.colorText,
+                      border: `1px solid ${siderBorder}`,
+                      background: isDark ? '#181818' : '#FFFFFF',
                       flexShrink: 0,
                     }}
                     aria-label="Открыть меню"
@@ -263,7 +266,7 @@ export function AppShell() {
                   onClick={() => {
                     void handleLogout();
                   }}
-                  style={{ color: '#FFB4AB', paddingInline: isMobile ? 8 : 12 }}
+                  style={{ color: isDark ? '#FFB4AB' : '#BA1A1A', paddingInline: isMobile ? 8 : 12 }}
                 >
                   {isMobile ? null : 'Выйти'}
                 </Button>
@@ -279,11 +282,11 @@ export function AppShell() {
                 width: '100%',
               }}
             >
-              <Typography.Text style={{ color: '#BFB6A8', maxWidth: isMobile ? '100%' : '70%' }}>
+              <Typography.Text style={{ color: token.colorTextSecondary, maxWidth: isMobile ? '100%' : '70%' }}>
                 {meta.description}
               </Typography.Text>
               {isMobile ? (
-                <Typography.Text style={{ color: 'rgba(229, 226, 225, 0.72)' }}>
+                <Typography.Text style={{ color: token.colorTextTertiary }}>
                   {meta.focus}
                 </Typography.Text>
               ) : null}
@@ -293,8 +296,7 @@ export function AppShell() {
         <Layout.Content
           style={{
             padding: isMobile ? 16 : 24,
-            background:
-              'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, #131313 0%, #0E0E0E 100%)',
+            background: pageBg,
           }}
         >
           <Outlet />

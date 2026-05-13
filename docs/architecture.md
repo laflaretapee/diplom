@@ -2,7 +2,7 @@
 
 ## Overview
 
-Japonica CRM is a modular FastAPI monolith with a React/Vite frontend, PostgreSQL as the primary database, Redis for ephemeral state and queue transport, and Celery for background jobs.
+Джейсан is a modular FastAPI monolith with a React/Vite frontend, PostgreSQL as the primary database, Redis for ephemeral state and queue transport, and Celery for background jobs.
 
 ## Runtime Pieces
 
