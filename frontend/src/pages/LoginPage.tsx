@@ -7,6 +7,7 @@ import { loginWithSession } from '../auth/api';
 import { resolvePostLoginPath } from '../auth/routes';
 import { useAuthStore } from '../auth/store';
 import type { LoginRequest } from '../auth/types';
+import { BrandLogo } from '../components/BrandLogo';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 
 type LoginFormValues = LoginRequest;
@@ -89,9 +90,12 @@ export function LoginPage() {
           styles={{ body: { padding: isMobile ? 20 : 24 } }}
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
-            <Typography.Title level={isMobile ? 3 : 2} style={{ marginBottom: 0, color: '#E5E2E1' }}>
-              Вход в Джейсан
-            </Typography.Title>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <BrandLogo height={isMobile ? 30 : 38} maxWidth={isMobile ? 168 : 220} />
+              <Typography.Title level={isMobile ? 4 : 3} style={{ marginBottom: 0, color: '#E5E2E1' }}>
+                Вход
+              </Typography.Title>
+            </div>
             <Typography.Text style={{ color: '#BFB6A8' }}>
               Используйте свою рабочую учётную запись. После входа система откроет раздел,
               соответствующий вашей роли.

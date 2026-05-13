@@ -18,6 +18,7 @@ import { apiClient } from '../api/client';
 import { roleMeta } from '../auth/roleMeta';
 import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
+import { BrandLogo } from '../components/BrandLogo';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { ensureArray } from '../utils/ensureArray';
 
@@ -935,9 +936,12 @@ export function AIAssistantPage() {
               <RobotOutlined />
             </div>
             <div>
-              <Typography.Title level={4} style={{ color: '#E8B86D', margin: 0 }}>
-                Джейсан ИИ
-              </Typography.Title>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <BrandLogo height={26} maxWidth={142} />
+                <Typography.Title level={4} style={{ color: '#E8B86D', margin: 0 }}>
+                  ИИ
+                </Typography.Title>
+              </div>
               <Typography.Text style={{ color: '#9B8F7F', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
                 Аналитическая консоль
               </Typography.Text>

@@ -24,6 +24,7 @@ import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
 import { useThemeStore } from '../store/themeStore';
+import { BrandLogo } from './BrandLogo';
 
 const diaryItem = { key: '/diary', icon: <CalendarOutlined />, label: 'Ежедневник' };
 
@@ -108,40 +109,7 @@ export function AppShell() {
     navigate('/login', { replace: true });
   };
 
-  const brandBlock = (
-    <Space align="center" size={12}>
-      <div
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 10,
-          display: 'grid',
-          placeItems: 'center',
-          background: 'linear-gradient(135deg, #FFD598 0%, #E8B86D 100%)',
-          color: '#281800',
-          boxShadow: '0 10px 30px rgba(232, 184, 109, 0.18)',
-          flexShrink: 0,
-        }}
-      >
-        <DashboardOutlined />
-      </div>
-      <div style={{ minWidth: 0 }}>
-        <Typography.Title level={isMobile ? 5 : 3} style={{ color: '#E8B86D', margin: 0 }}>
-          Джейсан
-        </Typography.Title>
-        <Typography.Text
-          style={{
-            color: isDark ? 'rgba(211, 196, 179, 0.68)' : '#817567',
-            fontSize: 10,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-          }}
-        >
-          CRM система
-        </Typography.Text>
-      </div>
-    </Space>
-  );
+  const brandBlock = <BrandLogo height={isMobile ? 32 : 46} maxWidth={isMobile ? 174 : 224} />;
 
   const siderBg = isDark ? '#0E0E0E' : '#FCF9F8';
   const siderBorder = isDark ? 'rgba(79, 69, 56, 0.35)' : '#E5E2E1';

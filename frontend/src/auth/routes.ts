@@ -11,6 +11,7 @@ const ROLE_PATHS: Record<Role, string[]> = {
     '/franchisee',
     '/orders',
     '/orders/history',
+    '/diary',
   ],
   franchisee: [
     '/dashboard',
@@ -20,9 +21,10 @@ const ROLE_PATHS: Record<Role, string[]> = {
     '/kanban',
     '/orders',
     '/orders/history',
+    '/diary',
   ],
-  point_manager: ['/orders', '/warehouse', '/documents', '/kanban', '/orders/history', '/queue'],
-  staff: ['/orders', '/documents', '/orders/history', '/queue'],
+  point_manager: ['/orders', '/warehouse', '/documents', '/kanban', '/orders/history', '/queue', '/diary'],
+  staff: ['/orders', '/documents', '/orders/history', '/queue', '/diary'],
 };
 
 export function getOrdersRouteForRole(role: Role | null): string {
