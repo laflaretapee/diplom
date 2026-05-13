@@ -1,14 +1,17 @@
 import {
   AppstoreOutlined,
+  CalendarOutlined,
   DashboardOutlined,
   FileTextOutlined,
   InboxOutlined,
   LogoutOutlined,
   MenuOutlined,
+  MoonOutlined,
   OrderedListOutlined,
   ProjectOutlined,
   RobotOutlined,
   SolutionOutlined,
+  SunOutlined,
 } from '@ant-design/icons';
 import { Button, Drawer, Layout, Menu, Space, Tag, Typography, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -20,6 +23,9 @@ import { roleMeta } from '../auth/roleMeta';
 import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useThemeStore } from '../store/themeStore';
+
+const diaryItem = { key: '/diary', icon: <CalendarOutlined />, label: 'Ежедневник' };
 
 const menuItemsByRole: Record<Role, MenuProps['items']> = {
   super_admin: [
@@ -31,6 +37,7 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/franchisee', icon: <OrderedListOutlined />, label: 'Франчайзи' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'Заказы' },
+    diaryItem,
   ],
   franchisee: [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Дашборд' },
@@ -39,6 +46,7 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'Заказы' },
+    diaryItem,
   ],
   point_manager: [
     { key: '/warehouse', icon: <InboxOutlined />, label: 'Склад' },
@@ -46,11 +54,13 @@ const menuItemsByRole: Record<Role, MenuProps['items']> = {
     { key: '/kanban', icon: <ProjectOutlined />, label: 'Канбан' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'История заказов' },
     { key: '/queue', icon: <OrderedListOutlined />, label: 'Очередь' },
+    diaryItem,
   ],
   staff: [
     { key: '/documents', icon: <FileTextOutlined />, label: 'Документы' },
     { key: '/orders/history', icon: <SolutionOutlined />, label: 'История заказов' },
     { key: '/queue', icon: <OrderedListOutlined />, label: 'Очередь' },
+    diaryItem,
   ],
 };
 
@@ -73,6 +83,8 @@ export function AppShell() {
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isDark = useThemeStore((s) => s.isDark);
+  const toggleTheme = useThemeStore((s) => s.toggle);
 
   if (!role) {
     return <Navigate to="/login" replace />;
@@ -131,15 +143,18 @@ export function AppShell() {
     </Space>
   );
 
+  const siderBg = isDark ? '#0E0E0E' : '#FDFAF7';
+  const siderBorder = isDark ? 'rgba(79, 69, 56, 0.35)' : 'rgba(0,0,0,0.08)';
+
   const navigationMenu = (
     <Menu
-      theme="dark"
+      theme={isDark ? 'dark' : 'light'}
       mode="inline"
       selectedKeys={[resolveSelectedKey(location.pathname)]}
       items={menuItemsByRole[role]}
       onClick={handleMenuClick}
       style={{
-        background: '#0E0E0E',
+        background: siderBg,
         borderInlineEnd: 'none',
       }}
     />
@@ -151,18 +166,18 @@ export function AppShell() {
         <Layout.Sider
           breakpoint="lg"
           collapsedWidth={0}
-          theme="dark"
+          theme={isDark ? 'dark' : 'light'}
           width={264}
           style={{
-            background: '#0E0E0E',
-            borderRight: '1px solid rgba(79, 69, 56, 0.35)',
+            background: siderBg,
+            borderRight: `1px solid ${siderBorder}`,
           }}
         >
-          <div style={{ padding: 24, color: '#ffffff' }}>
+          <div style={{ padding: 24 }}>
             {brandBlock}
             <Typography.Text
               style={{
-                color: 'rgba(229, 226, 225, 0.72)',
+                color: token.colorTextSecondary,
                 display: 'block',
                 marginTop: 18,
               }}
@@ -176,8 +191,8 @@ export function AppShell() {
       <Layout>
         <Layout.Header
           style={{
-            background: 'rgba(14, 14, 14, 0.72)',
-            borderBottom: `1px solid rgba(79, 69, 56, 0.35)`,
+            background: isDark ? 'rgba(14, 14, 14, 0.72)' : 'rgba(253, 250, 247, 0.92)',
+            borderBottom: `1px solid ${siderBorder}`,
             backdropFilter: 'blur(18px)',
             display: 'flex',
             alignItems: 'stretch',
@@ -224,17 +239,24 @@ export function AppShell() {
                   color="default"
                   style={{
                     marginInlineEnd: 0,
-                    background: '#201F1F',
-                    borderColor: '#4F4538',
+                    background: isDark ? '#201F1F' : token.colorBgElevated,
+                    borderColor: isDark ? '#4F4538' : token.colorBorder,
                     color: meta.accent,
                     fontFamily: '"JetBrains Mono", monospace',
                   }}
                 >
                   {meta.label}
                 </Tag>
-                <Typography.Text strong style={{ color: '#E5E2E1' }}>
+                <Typography.Text strong style={{ color: token.colorText }}>
                   {name ?? 'Неизвестный пользователь'}
                 </Typography.Text>
+                <Button
+                  type="text"
+                  icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                  onClick={toggleTheme}
+                  style={{ color: token.colorTextSecondary, paddingInline: 8 }}
+                  title={isDark ? 'Светлая тема' : 'Тёмная тема'}
+                />
                 <Button
                   type="text"
                   icon={<LogoutOutlined />}
@@ -287,48 +309,58 @@ export function AppShell() {
         styles={{
           header: {
             padding: 16,
-            background: '#0E0E0E',
-            borderBottom: '1px solid rgba(79, 69, 56, 0.35)',
+            background: siderBg,
+            borderBottom: `1px solid ${siderBorder}`,
           },
           body: {
             padding: 0,
-            background: '#0E0E0E',
+            background: siderBg,
           },
           content: {
-            background: '#0E0E0E',
+            background: siderBg,
           },
         }}
         title={brandBlock}
       >
-        <div style={{ padding: '0 16px 16px', borderBottom: '1px solid rgba(79, 69, 56, 0.35)' }}>
+        <div style={{ padding: '0 16px 16px', borderBottom: `1px solid ${siderBorder}` }}>
           <Typography.Text
             style={{
-              color: 'rgba(229, 226, 225, 0.72)',
+              color: token.colorTextSecondary,
               display: 'block',
               marginBottom: 8,
             }}
           >
             {meta.focus}
           </Typography.Text>
-          <Typography.Text style={{ color: '#BFB6A8' }}>{meta.description}</Typography.Text>
+          <Typography.Text style={{ color: token.colorTextSecondary }}>{meta.description}</Typography.Text>
         </div>
         {navigationMenu}
-        <div style={{ padding: 16, borderTop: '1px solid rgba(79, 69, 56, 0.35)' }}>
+        <div style={{ padding: 16, borderTop: `1px solid ${siderBorder}` }}>
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <Tag
-              color="default"
-              style={{
-                marginInlineEnd: 0,
-                background: '#201F1F',
-                borderColor: '#4F4538',
-                color: meta.accent,
-                fontFamily: '"JetBrains Mono", monospace',
-                alignSelf: 'flex-start',
-              }}
-            >
-              {meta.label}
-            </Tag>
-            <Typography.Text strong style={{ color: '#E5E2E1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Tag
+                color="default"
+                style={{
+                  marginInlineEnd: 0,
+                  background: isDark ? '#201F1F' : token.colorBgElevated,
+                  borderColor: isDark ? '#4F4538' : token.colorBorder,
+                  color: meta.accent,
+                  fontFamily: '"JetBrains Mono", monospace',
+                  alignSelf: 'flex-start',
+                }}
+              >
+                {meta.label}
+              </Tag>
+              <Button
+                type="text"
+                icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+                onClick={toggleTheme}
+                size="small"
+                style={{ color: token.colorTextSecondary }}
+                title={isDark ? 'Светлая тема' : 'Тёмная тема'}
+              />
+            </div>
+            <Typography.Text strong style={{ color: token.colorText }}>
               {name ?? 'Неизвестный пользователь'}
             </Typography.Text>
             <Button

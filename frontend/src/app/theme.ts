@@ -1,6 +1,66 @@
 import { theme } from 'antd';
 import type { ThemeConfig } from 'antd';
 
+export const lightTheme: ThemeConfig = {
+  algorithm: theme.defaultAlgorithm,
+  token: {
+    borderRadius: 10,
+    colorPrimary: '#C8832D',
+    colorInfo: '#C8832D',
+    colorSuccess: '#389E0D',
+    colorWarning: '#D46B08',
+    colorError: '#CF1322',
+    colorLink: '#C8832D',
+    colorBgBase: '#FDFAF7',
+    colorBgContainer: '#FFFFFF',
+    colorBgElevated: '#F5F0EB',
+    colorBorder: '#DED8D0',
+    colorText: '#1A1714',
+    colorTextSecondary: '#6B5F52',
+    colorTextTertiary: '#9B8F80',
+    fontFamily:
+      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamilyCode: 'JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace',
+  },
+  components: {
+    Button: {
+      defaultBg: '#FFFFFF',
+      defaultBorderColor: '#DED8D0',
+      defaultColor: '#1A1714',
+      primaryShadow: '0 14px 30px rgba(200, 131, 45, 0.20)',
+    },
+    Input: {
+      colorBgContainer: '#FFFFFF',
+      colorBorder: '#DED8D0',
+      activeBorderColor: '#C8832D',
+      hoverBorderColor: '#E8A050',
+    },
+    Layout: {
+      bodyBg: '#F5F0EB',
+      headerBg: '#FDFAF7',
+      siderBg: '#FDFAF7',
+      triggerBg: '#FDFAF7',
+      triggerColor: '#1A1714',
+    },
+    Card: {
+      colorBgContainer: '#FFFFFF',
+      headerBg: '#FFFFFF',
+      colorBorderSecondary: '#DED8D0',
+    },
+    Select: {
+      colorBgContainer: '#FFFFFF',
+      colorBorder: '#DED8D0',
+      optionSelectedBg: '#FDF3E3',
+      optionActiveBg: '#F5F0EB',
+    },
+    Table: {
+      headerBg: '#F5F0EB',
+      headerColor: '#6B5F52',
+      rowHoverBg: '#FAF6F1',
+    },
+  },
+};
+
 export const appTheme: ThemeConfig = {
   algorithm: theme.darkAlgorithm,
   token: {

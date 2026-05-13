@@ -1,7 +1,7 @@
 """kanban tasks full: add card fields and notification_log
 
 Revision ID: 20260417_0011
-Revises: 20260331_0010
+Revises: 20260331_0011
 Create Date: 2026-04-17 00:00:00
 """
 from __future__ import annotations
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "20260417_0011"
-down_revision = "20260331_0010"
+down_revision = "20260331_0011"
 branch_labels = None
 depends_on = None
 

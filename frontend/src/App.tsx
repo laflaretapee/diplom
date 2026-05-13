@@ -8,6 +8,7 @@ import { getDefaultRouteForRole, getOrdersRouteForRole } from './auth/routes';
 import { useAuthStore } from './auth/store';
 import { AIAssistantPage } from './pages/AIAssistantPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { DiaryPage } from './pages/DiaryPage';
 import { DishesPage } from './pages/DishesPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { FranchiseeKanbanPage } from './pages/FranchiseeKanbanPage';
@@ -129,6 +130,7 @@ const router = createBrowserRouter([
               { path: 'kanban', element: <KanbanBoardsPage /> },
               { path: 'kanban/:boardId', element: <KanbanBoardPage /> },
               { path: 'franchisee', element: <FranchiseeKanbanPage /> },
+              { path: 'diary', element: <DiaryPage /> },
               { path: 'orders', element: <OrdersRedirect /> },
               { path: 'orders/history', element: <OrderHistoryPage /> },
               { path: 'queue', element: <OrderQueuePage /> },
