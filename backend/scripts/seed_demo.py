@@ -6,7 +6,7 @@ import sys
 import uuid
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import UTC, datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -403,7 +403,7 @@ async def cleanup_owned_demo_graph(db: AsyncSession) -> None:
         Point,
         [tagged_name_filter(Point.name)],
     )
-    ingredient_ids = await _collect_ids(
+    await _collect_ids(
         db,
         Ingredient,
         [tagged_name_filter(Ingredient.name)],

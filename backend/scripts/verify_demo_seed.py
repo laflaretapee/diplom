@@ -111,7 +111,7 @@ async def load_demo_state(db: AsyncSession) -> dict[str, object]:
     expect(len(users) == 4, f"Expected 4 fixed demo users, got {len(users)}")
 
     users_by_email = {user.email: user for user in users}
-    for label, (email, _password, role) in FIXED_USERS.items():
+    for _label, (email, _password, role) in FIXED_USERS.items():
         user = users_by_email.get(email)
         expect(user is not None, f"Missing demo user {email}")
         expect(user.role == role, f"Unexpected role for {email}: {user.role}")

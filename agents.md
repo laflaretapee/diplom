@@ -107,10 +107,37 @@ uv run python backend/scripts/export_openapi.py --output docs/openapi.json
 
 ---
 
+## Сервер (VPS)
+
+- Хост: `85.239.38.178` (root доступ по паролю)
+- Проект: `/opt/japonica-crm/` (bind mount в контейнеры как `/workspace`)
+- Контейнеры: `japonica-crm-api-1`, `japonica-crm-frontend-1`, `japonica-crm-nginx-1`, `japonica-crm-worker-1`, `-postgres-1`, `-redis-1`
+- **Нет git на сервере** — деплой через SFTP копирование файлов + docker restart/up
+- GitHub: `git@github.com:laflaretapee/diplom.git` (SSH, настроен)
+- Frontend: Vite dev server в контейнере, файлы берутся напрямую из bind mount
+
+## Что сделано в сессии 2026-05-13
+
+- Добавлен **DiaryPage** (`frontend/src/pages/DiaryPage.tsx`) — ежедневник в стиле iPhone Calendar:
+  - Три вида: год (все 12 месяцев), месяц (сетка дней + dot-индикаторы событий), день (24-часовой таймлайн)
+  - CRUD событий через Modal (title, startHour, endHour, description)
+  - Хранение в localStorage: ключ `japonica_diary_{userId}` — изолировано на каждого пользователя
+  - Акцентный цвет по роли: super_admin=золотой, franchisee=синий, point_manager=зелёный, staff=фиолетовый
+  - Индикатор текущего времени (красная линия) в дневном виде
+- Добавлен **Theme Toggle** (светлая/тёмная тема):
+  - `frontend/src/store/themeStore.ts` — Zustand store с localStorage persistence
+  - `lightTheme` в `frontend/src/app/theme.ts` — тёплая кремовая палитра
+  - `ThemeProvider` в `frontend/src/main.tsx` — динамический ConfigProvider
+  - Кнопка SunOutlined/MoonOutlined в header и mobile drawer
+- Пункт **Ежедневник** добавлен в меню для всех ролей
+- Маршрут `/diary` зарегистрирован в `App.tsx`
+- Починена цепочка миграции `20260417_0011_kanban_tasks_full.py`
+- Обновлён `vite.config.ts` (allowedHosts)
+- Коммит: `3f42355` → запушен в GitHub
+- Файлы скопированы на сервер, `japonica-crm-frontend-1` перезапущен
+
 ## Что может потребоваться дальше
 
-- Закоммитить незакоммиченные изменения (migration fix + vite config)
-- Деплой на VPS (конфиг есть в `deploy/`)
 - Дополнительные фичи по запросу (если диплом расширяется)
 - Подготовка к защите (demo package готов в `docs/demo/`)
 

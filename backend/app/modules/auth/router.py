@@ -145,7 +145,7 @@ async def refresh(
     try:
         payload = decode_refresh_token(refresh_token)
     except JWTError:
-        raise credentials_error
+        raise credentials_error from None
 
     user_id: str = payload["sub"]
     result = await db.execute(select(User).where(User.id == user_id))

@@ -11,10 +11,10 @@ sys.path.insert(0, "/workspace")
 from sqlalchemy import select
 
 from backend.app.db.session import SessionLocal
+from backend.app.models.order import OrderStatus, PaymentType, SourceChannel
 from backend.app.models.point import Point
-from backend.app.models.order import Order, OrderStatus, PaymentType, SourceChannel
-from backend.app.modules.orders.schemas import OrderCreate, OrderItem, OrderStatusUpdate
 from backend.app.modules.orders import service as order_service
+from backend.app.modules.orders.schemas import OrderCreate, OrderItem, OrderStatusUpdate
 
 
 async def main() -> None:

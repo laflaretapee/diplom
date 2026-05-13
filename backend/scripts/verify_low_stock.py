@@ -15,12 +15,12 @@ from unittest.mock import patch
 
 sys.path.insert(0, "/workspace")
 
+from sqlalchemy import select
+
 import backend.app.models.franchisee  # noqa: F401
 import backend.app.models.franchisee_task  # noqa: F401
 import backend.app.models.user  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
-from sqlalchemy import select
-
 from backend.app.db.session import SessionLocal
 from backend.app.models.dish import Dish
 from backend.app.models.dish_ingredient import DishIngredient

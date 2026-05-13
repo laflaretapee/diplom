@@ -6,8 +6,8 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 
 sys.path.insert(0, "/workspace")
 
@@ -35,14 +35,15 @@ def http_get(url, headers=None):
 
 
 async def get_ids():
+    from sqlalchemy import select
+
     import backend.app.models.franchisee  # noqa: F401
     import backend.app.models.franchisee_task  # noqa: F401
     import backend.app.models.user  # noqa: F401
     import backend.app.models.user_point  # noqa: F401
     from backend.app.db.session import SessionLocal
-    from backend.app.models.point import Point
     from backend.app.models.ingredient import Ingredient
-    from sqlalchemy import select
+    from backend.app.models.point import Point
 
     async with SessionLocal() as db:
         r = await db.execute(select(Point).limit(1))

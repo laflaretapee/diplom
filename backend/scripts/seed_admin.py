@@ -6,7 +6,7 @@ import bcrypt
 
 sys.path.insert(0, "/workspace")
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 
 from backend.app.db.session import SessionLocal
 from backend.app.models.user import User, UserRole

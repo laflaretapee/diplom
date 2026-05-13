@@ -34,13 +34,13 @@ async def get_current_user(
     try:
         payload = decode_access_token(credentials.credentials)
     except JWTError:
-        raise _UNAUTHORIZED
+        raise _UNAUTHORIZED from None
 
     user_id: str = payload.get("sub", "")
     try:
         uid = uuid.UUID(user_id)
     except ValueError:
-        raise _UNAUTHORIZED
+        raise _UNAUTHORIZED from None
 
     result = await db.execute(select(User).where(User.id == uid))
     user = result.scalar_one_or_none()

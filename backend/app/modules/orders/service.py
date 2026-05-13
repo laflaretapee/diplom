@@ -37,7 +37,7 @@ async def write_off_for_order(
     from backend.app.models.dish import Dish
     from backend.app.models.dish_ingredient import DishIngredient
     from backend.app.models.stock_item import StockItem
-    from backend.app.models.stock_movement import StockMovement, MovementType
+    from backend.app.models.stock_movement import MovementType, StockMovement
     from backend.app.modules.warehouse.service import check_and_notify_low_stock
 
     async with SessionLocal() as db:
@@ -51,18 +51,19 @@ async def write_off_for_order(
                 dish = None
                 if dish_id:
                     dish_result = await db.execute(
-                        select(Dish).where(Dish.id == dish_id, Dish.is_active == True)
+                        select(Dish).where(Dish.id == dish_id, Dish.is_active)
                     )
                     dish = dish_result.scalar_one_or_none()
 
                 if dish is None and dish_name:
                     dish_result = await db.execute(
-                        select(Dish).where(Dish.name == dish_name, Dish.is_active == True)
+                        select(Dish).where(Dish.name == dish_name, Dish.is_active)
                     )
                     dish = dish_result.scalar_one_or_none()
                 if dish is None:
                     logger.debug(
-                        "write_off_for_order: dish id='%s' name='%s' not found or inactive, skipping",
+                        "write_off_for_order: dish id='%s' name='%s' not found or inactive,"
+                        " skipping",
                         dish_id,
                         dish_name,
                     )
@@ -85,7 +86,8 @@ async def write_off_for_order(
                     stock_item = si_result.scalar_one_or_none()
                     if stock_item is None:
                         logger.debug(
-                            "write_off_for_order: StockItem not found for ingredient %s at point %s, skipping",
+                            "write_off_for_order: StockItem not found for ingredient"
+                            " %s at point %s, skipping",
                             dish_ingredient.ingredient_id,
                             point_id,
                         )
@@ -98,7 +100,8 @@ async def write_off_for_order(
 
                     if stock_item.quantity < 0:
                         logger.warning(
-                            "write_off_for_order: StockItem %s went below zero (quantity=%s) for order %s",
+                            "write_off_for_order: StockItem %s went below zero"
+                            " (quantity=%s) for order %s",
                             stock_item.id,
                             stock_item.quantity,
                             order_id,

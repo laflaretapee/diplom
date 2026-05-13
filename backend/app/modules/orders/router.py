@@ -3,11 +3,10 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.deps import (
-    get_current_user,
     require_any_role,
     require_manager_or_above,
     require_roles,
@@ -15,8 +14,7 @@ from backend.app.core.deps import (
 )
 from backend.app.db.session import get_db_session
 from backend.app.models.order import OrderStatus
-from backend.app.models.user import UserRole
-from backend.app.models.user import User
+from backend.app.models.user import User, UserRole
 from backend.app.modules.orders import service
 from backend.app.modules.orders.schemas import OrderCreate, OrderRead, OrderStatusUpdate
 

@@ -10,12 +10,12 @@ from decimal import Decimal
 
 sys.path.insert(0, "/workspace")
 
+from sqlalchemy import select
+
 import backend.app.models.franchisee  # noqa: F401
 import backend.app.models.franchisee_task  # noqa: F401
 import backend.app.models.user  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
-from sqlalchemy import select
-
 from backend.app.db.session import SessionLocal
 from backend.app.models.ingredient import Ingredient
 from backend.app.models.point import Point

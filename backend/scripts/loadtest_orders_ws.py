@@ -8,7 +8,7 @@ import statistics
 import sys
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -21,9 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from backend.app.modules.orders.schemas import OrderCreate, OrderItem  # noqa: E402
 from backend.app.models.order import PaymentType, SourceChannel  # noqa: E402
-
+from backend.app.modules.orders.schemas import OrderCreate, OrderItem  # noqa: E402
 
 DEFAULT_ADMIN_EMAIL = "admin@japonica.example.com"
 DEFAULT_ADMIN_PASSWORD = "Admin1234!"

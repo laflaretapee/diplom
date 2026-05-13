@@ -13,9 +13,9 @@ from backend.app.core.deps import (
 from backend.app.db.session import get_db_session
 from backend.app.models.user import User
 from backend.app.modules.analytics.schemas import (
-    AnomaliesResponse,
     AnalyticsModuleStatus,
     AnalyticsSummaryResponse,
+    AnomaliesResponse,
     AssistantChatRequest,
     AssistantChatResponse,
     ChannelAnalyticsItem,

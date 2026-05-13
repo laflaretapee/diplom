@@ -5,8 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.dish import Dish
-from backend.app.models.order import SourceChannel
-from backend.app.models.order import Order
+from backend.app.models.order import Order, SourceChannel
 from backend.app.models.point import Point
 from backend.app.modules.inbound.schemas import InboundOrderRequest
 from backend.app.modules.orders.schemas import OrderCreate, OrderItem

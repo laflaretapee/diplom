@@ -284,7 +284,7 @@ def send_order_notification(
         }
     except Exception as exc:
         logger.error("Failed to send notification: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @celery_app.task(
@@ -331,7 +331,7 @@ def send_low_stock_notification(
             "recipients": delivered,
         }
     except Exception as exc:
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @celery_app.task(
@@ -367,7 +367,7 @@ def send_franchisee_stage_notification(self, franchisee_id: str, new_status: str
         }
     except Exception as exc:
         logger.error("Failed to send franchisee stage notification: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @celery_app.task(
@@ -415,7 +415,7 @@ def send_franchisee_task_status_notification(
         }
     except Exception as exc:
         logger.error("Failed to send franchisee task notification: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @celery_app.task(
@@ -446,7 +446,7 @@ def send_overdue_franchisee_task_notifications(self):
         }
     except Exception as exc:
         logger.error("Failed to send overdue franchisee task notifications: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @celery_app.task(
@@ -477,4 +477,4 @@ def send_weekly_revenue_report(self):
         }
     except Exception as exc:
         logger.error("Failed to send weekly revenue reports: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc

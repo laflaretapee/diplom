@@ -284,7 +284,7 @@ async def attach_franchisee_point(
     try:
         point = await service.attach_point(db, franchisee_id, data)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     return s.FranchiseePointResponse.model_validate(point)
 
 
@@ -302,4 +302,4 @@ async def detach_franchisee_point(
     try:
         await service.detach_point(db, franchisee_id, point_id)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

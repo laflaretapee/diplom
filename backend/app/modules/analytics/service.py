@@ -4,8 +4,8 @@ import logging
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, time, timedelta
-from decimal import Decimal, ROUND_HALF_UP
+from datetime import UTC, datetime, time, timedelta
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -21,23 +21,23 @@ from backend.app.models.point import Point
 from backend.app.models.stock_item import StockItem
 from backend.app.models.stock_movement import MovementType, StockMovement
 from backend.app.models.user import User, UserRole
-from backend.app.modules.franchisee.service import (
-    get_accessible_point_ids_for_user,
-    get_accessible_points_for_user,
-)
 from backend.app.modules.analytics.schemas import (
-    AnomaliesResponse,
-    AnomalySignal,
     AnalyticsModuleStatus,
     AnalyticsSummaryResponse,
+    AnomaliesResponse,
+    AnomalySignal,
     AssistantChatResponse,
     AssistantEvidenceItem,
     ChannelAnalyticsItem,
-    DishesAnalyticsResponse,
     DishAnalyticsItem,
+    DishesAnalyticsResponse,
     ForecastItem,
     ProcurementForecastResponse,
     RevenuePointItem,
+)
+from backend.app.modules.franchisee.service import (
+    get_accessible_point_ids_for_user,
+    get_accessible_points_for_user,
 )
 
 TWO_PLACES = Decimal("0.01")
@@ -642,8 +642,8 @@ async def get_anomalies(
                     severity=severity,
                     title="Падение выручки",
                     description=(
-                        f"За последние 7 дней выручка упала до {change_ratio.quantize(TWO_PLACES)}% "
-                        f"от предыдущей недели."
+                        f"За последние 7 дней выручка упала до "
+                        f"{change_ratio.quantize(TWO_PLACES)}% от предыдущей недели."
                     ),
                     metric="weekly_revenue",
                     current_value=_money_text(current_revenue),
@@ -792,12 +792,14 @@ def _build_assistant_suggestions(
         if risky:
             item = risky[0]
             suggestions.append(
-                f"Запланируйте закупку {item.ingredient_name}: {item.recommended_purchase} {item.unit}."
+                f"Запланируйте закупку {item.ingredient_name}: "
+                f"{item.recommended_purchase} {item.unit}."
             )
     if dishes.bottom:
         item = dishes.bottom[0]
         suggestions.append(
-            f"Пересмотрите спрос на {item.dish_name}: всего {_quantity_text(item.total_quantity)} порций."
+            f"Пересмотрите спрос на {item.dish_name}: "
+            f"всего {_quantity_text(item.total_quantity)} порций."
         )
     return suggestions[:3]
 

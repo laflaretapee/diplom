@@ -5,12 +5,12 @@ import sys
 
 sys.path.insert(0, "/workspace")
 
+from sqlalchemy import select
+
 import backend.app.models.franchisee  # noqa: F401
 import backend.app.models.franchisee_task  # noqa: F401
 import backend.app.models.user  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
-from sqlalchemy import select
-
 from backend.app.db.session import SessionLocal
 from backend.app.models.user import User
 from backend.app.tasks.notifications import send_weekly_revenue_report

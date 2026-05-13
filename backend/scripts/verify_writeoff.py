@@ -15,16 +15,16 @@ sys.path.insert(0, "/workspace")
 
 from sqlalchemy import select
 
-from backend.app.db.session import SessionLocal
 # Import all models so SQLAlchemy mapper initializes correctly
 import backend.app.models.franchisee  # noqa: F401
 import backend.app.models.franchisee_task  # noqa: F401
 import backend.app.models.user  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
+from backend.app.db.session import SessionLocal
 from backend.app.models.dish import Dish
 from backend.app.models.dish_ingredient import DishIngredient
 from backend.app.models.ingredient import Ingredient
-from backend.app.models.order import Order, OrderStatus, PaymentType
+from backend.app.models.order import PaymentType
 from backend.app.models.point import Point
 from backend.app.models.stock_item import StockItem
 from backend.app.models.stock_movement import StockMovement

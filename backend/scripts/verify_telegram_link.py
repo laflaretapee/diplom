@@ -11,11 +11,11 @@ import urllib.request
 
 sys.path.insert(0, "/workspace")
 
+from sqlalchemy import select
+
 import backend.app.models.franchisee  # noqa: F401
 import backend.app.models.franchisee_task  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
-from sqlalchemy import select
-
 from backend.app.core.config import get_settings
 from backend.app.db.session import SessionLocal
 from backend.app.models.user import User

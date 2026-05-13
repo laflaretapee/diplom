@@ -11,7 +11,7 @@ import bcrypt
 
 sys.path.insert(0, "/workspace")
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 
 from backend.app.core.deps import verify_point_access
 from backend.app.db.session import SessionLocal

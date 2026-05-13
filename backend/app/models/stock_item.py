@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import DateTime, ForeignKey, Numeric, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID

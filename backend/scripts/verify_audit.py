@@ -6,9 +6,9 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import uuid
 import urllib.error
 import urllib.request
+import uuid
 from decimal import Decimal
 
 import bcrypt

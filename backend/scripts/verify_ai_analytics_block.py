@@ -3,12 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import uuid
 import urllib.request
+import uuid
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 sys.path.insert(0, "/workspace")
+
 
 import backend.app.models.dish  # noqa: F401
 import backend.app.models.dish_ingredient  # noqa: F401
@@ -20,8 +21,6 @@ import backend.app.models.point  # noqa: F401
 import backend.app.models.stock_item  # noqa: F401
 import backend.app.models.stock_movement  # noqa: F401
 import backend.app.models.user_point  # noqa: F401
-from sqlalchemy import select
-
 from backend.app.db.session import SessionLocal
 from backend.app.models.dish import Dish
 from backend.app.models.dish_ingredient import DishIngredient
