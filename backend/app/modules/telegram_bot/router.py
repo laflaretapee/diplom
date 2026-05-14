@@ -7,17 +7,9 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
-from aiogram.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    Message,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
-    Update,
-    WebAppInfo,
-)
+from aiogram.types import Update
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import get_settings
@@ -51,42 +43,55 @@ def get_bot() -> Bot:
     return _bot
 
 
-# ── Keyboard helpers ──────────────────────────────────────────────────────────
+# ── Webhook reply builders (no outbound connection needed) ────────────────────
+# Telegram processes the bot method returned in the HTTP response body —
+# this avoids any outbound API calls from the container to api.telegram.org.
 
-def _mini_app_keyboard(telegram_id: str) -> InlineKeyboardMarkup:
+def _send(chat_id: int | str, text: str, reply_markup: dict | None = None) -> dict:
+    payload: dict = {"method": "sendMessage", "chat_id": chat_id, "text": text}
+    if reply_markup is not None:
+        payload["reply_markup"] = reply_markup
+    return payload
+
+
+def _mini_app_keyboard(telegram_id: str) -> dict:
     settings = get_settings()
     sep = "&" if "?" in settings.sales_telegram_mini_app_url else "?"
     url = f"{settings.sales_telegram_mini_app_url}{sep}telegram_id={telegram_id}"
-    return InlineKeyboardMarkup(
-        inline_keyboard=[[
-            InlineKeyboardButton(text="Открыть меню", web_app=WebAppInfo(url=url))
+    return {
+        "inline_keyboard": [[
+            {"text": "Открыть меню", "web_app": {"url": url}}
         ]]
-    )
+    }
 
 
-def _phone_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="Отправить номер", request_contact=True)]],
-        resize_keyboard=True,
-        one_time_keyboard=True,
-    )
+def _phone_keyboard() -> dict:
+    return {
+        "keyboard": [[{"text": "Отправить номер", "request_contact": True}]],
+        "resize_keyboard": True,
+        "one_time_keyboard": True,
+    }
 
 
-def _location_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="Отправить геолокацию", request_location=True)]],
-        resize_keyboard=True,
-        one_time_keyboard=True,
-    )
+def _location_keyboard() -> dict:
+    return {
+        "keyboard": [[{"text": "Отправить геолокацию", "request_location": True}]],
+        "resize_keyboard": True,
+        "one_time_keyboard": True,
+    }
 
 
-def _reply_markup_for_step(step: RegistrationStep):
+def _remove_keyboard() -> dict:
+    return {"remove_keyboard": True}
+
+
+def _reply_markup_for_step(step: RegistrationStep) -> dict | None:
     if step == RegistrationStep.PHONE:
         return _phone_keyboard()
     if step == RegistrationStep.ADDRESS:
         return _location_keyboard()
     if step == RegistrationStep.ADDRESS_DETAILS:
-        return ReplyKeyboardRemove()
+        return _remove_keyboard()
     return None
 
 
@@ -131,9 +136,11 @@ async def _reverse_geocode(lat: float, lon: float) -> str | None:
 
 
 # ── Handlers ──────────────────────────────────────────────────────────────────
+# Each handler appends one reply dict to `_reply` list.
+# The endpoint returns reply[0] as the webhook HTTP response body.
 
 @_dp.message(Command("start"))
-async def handle_start(message: Message, db: AsyncSession) -> None:
+async def handle_start(message, db: AsyncSession, _reply: list) -> None:
     if message.from_user is None:
         return
     customer = await get_or_create_sales_customer(
@@ -143,13 +150,14 @@ async def handle_start(message: Message, db: AsyncSession) -> None:
     )
     set_registration_step(customer, RegistrationStep.NAME)
     await db.commit()
-    await message.answer(
-        "Перед заказом сохраним данные для доставки. " + _prompt(RegistrationStep.NAME)
-    )
+    _reply.append(_send(
+        message.chat.id,
+        "Перед заказом сохраним данные для доставки. " + _prompt(RegistrationStep.NAME),
+    ))
 
 
 @_dp.message(F.contact)
-async def handle_contact(message: Message, db: AsyncSession) -> None:
+async def handle_contact(message, db: AsyncSession, _reply: list) -> None:
     if message.from_user is None:
         return
     customer = await get_or_create_sales_customer(
@@ -159,23 +167,24 @@ async def handle_contact(message: Message, db: AsyncSession) -> None:
     )
     step = get_registration_step(customer) or RegistrationStep.NAME
     if step != RegistrationStep.PHONE:
-        await message.answer(_prompt(step), reply_markup=_reply_markup_for_step(step))
+        _reply.append(_send(message.chat.id, _prompt(step), _reply_markup_for_step(step)))
         return
-    phone = str(message.contact.phone_number or "").strip()  # type: ignore[union-attr]
+    phone = str(message.contact.phone_number or "").strip()
     next_step = apply_registration_step(customer, step, phone)
     set_registration_step(customer, next_step)
     await db.commit()
     if next_step is not None:
-        await message.answer(_prompt(next_step), reply_markup=_reply_markup_for_step(next_step))
+        _reply.append(_send(message.chat.id, _prompt(next_step), _reply_markup_for_step(next_step)))
     else:
-        await message.answer(
+        _reply.append(_send(
+            message.chat.id,
             "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
-            reply_markup=_mini_app_keyboard(str(message.from_user.id)),
-        )
+            _mini_app_keyboard(str(message.from_user.id)),
+        ))
 
 
 @_dp.message(F.location)
-async def handle_location(message: Message, db: AsyncSession) -> None:
+async def handle_location(message, db: AsyncSession, _reply: list) -> None:
     if message.from_user is None:
         return
     customer = await get_or_create_sales_customer(
@@ -185,25 +194,26 @@ async def handle_location(message: Message, db: AsyncSession) -> None:
     )
     step = get_registration_step(customer) or RegistrationStep.NAME
     if step != RegistrationStep.ADDRESS:
-        await message.answer(_prompt(step), reply_markup=_reply_markup_for_step(step))
+        _reply.append(_send(message.chat.id, _prompt(step), _reply_markup_for_step(step)))
         return
-    lat = message.location.latitude  # type: ignore[union-attr]
-    lon = message.location.longitude  # type: ignore[union-attr]
+    lat = message.location.latitude
+    lon = message.location.longitude
     address = await _reverse_geocode(lat, lon) or f"Координаты: {lat}, {lon}"
     next_step = apply_registration_step(customer, step, address)
     set_registration_step(customer, next_step)
     await db.commit()
     if next_step is not None:
-        await message.answer(_prompt(next_step), reply_markup=_reply_markup_for_step(next_step))
+        _reply.append(_send(message.chat.id, _prompt(next_step), _reply_markup_for_step(next_step)))
     else:
-        await message.answer(
+        _reply.append(_send(
+            message.chat.id,
             "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
-            reply_markup=_mini_app_keyboard(str(message.from_user.id)),
-        )
+            _mini_app_keyboard(str(message.from_user.id)),
+        ))
 
 
 @_dp.message(F.text & ~F.text.startswith("/"))
-async def handle_text(message: Message, db: AsyncSession) -> None:
+async def handle_text(message, db: AsyncSession, _reply: list) -> None:
     if message.from_user is None:
         return
     customer = await get_or_create_sales_customer(
@@ -214,18 +224,19 @@ async def handle_text(message: Message, db: AsyncSession) -> None:
     step = get_registration_step(customer) or RegistrationStep.NAME
     text = str(message.text or "").strip()
     if not text:
-        await message.answer(_prompt(step), reply_markup=_reply_markup_for_step(step))
+        _reply.append(_send(message.chat.id, _prompt(step), _reply_markup_for_step(step)))
         return
     next_step = apply_registration_step(customer, step, text)
     set_registration_step(customer, next_step)
     await db.commit()
     if next_step is not None:
-        await message.answer(_prompt(next_step), reply_markup=_reply_markup_for_step(next_step))
+        _reply.append(_send(message.chat.id, _prompt(next_step), _reply_markup_for_step(next_step)))
     else:
-        await message.answer(
+        _reply.append(_send(
+            message.chat.id,
             "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
-            reply_markup=_mini_app_keyboard(str(message.from_user.id)),
-        )
+            _mini_app_keyboard(str(message.from_user.id)),
+        ))
 
 
 # ── Webhook setup (called on app startup) ────────────────────────────────────
@@ -248,6 +259,7 @@ async def setup_webhook() -> None:
         "Sales bot webhook set: %s (pending updates dropped)",
         settings.sales_telegram_webhook_url,
     )
+    await bot.session.close()
 
 
 # ── FastAPI endpoint ──────────────────────────────────────────────────────────
@@ -265,5 +277,8 @@ async def aiogram_webhook(
         raise HTTPException(status_code=503, detail="Sales Telegram bot token is not configured")
     update_data = await request.json()
     update = Update(**update_data)
-    await _dp.feed_update(get_bot(), update, db=db)
+    reply: list[dict] = []
+    await _dp.feed_update(get_bot(), update, db=db, _reply=reply)
+    if reply:
+        return JSONResponse(reply[0])
     return Response()
