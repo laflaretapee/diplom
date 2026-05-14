@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,9 +24,17 @@ from backend.app.modules.warehouse.router import router as warehouse_router
 settings = get_settings()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from backend.app.modules.telegram_bot.router import setup_webhook
+    await setup_webhook()
+    yield
+
+
 def create_application() -> FastAPI:
     configure_logging()
     app = FastAPI(
+        lifespan=lifespan,
         title=settings.app_name,
         version="0.1.0",
         description=(

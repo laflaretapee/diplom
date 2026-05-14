@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     telegram_webhook_secret: str = "tg-webhook-secret"
     sales_telegram_bot_token: str = ""
     sales_telegram_webhook_secret: str = "sales-tg-webhook-secret"
+    sales_telegram_webhook_url: str = ""
     sales_telegram_mini_app_url: str = "http://localhost:5173/shop/telegram"
     robokassa_merchant_login: str = "Test1999"
     robokassa_password1: str = "password_1"
