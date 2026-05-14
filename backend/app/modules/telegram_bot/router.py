@@ -1,11 +1,5 @@
 from __future__ import annotations
 
-import socket
-
-from aiogram import Bot, Dispatcher, Router
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update, WebAppInfo
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,18 +16,18 @@ from backend.app.modules.telegram_bot.service import (
 router = APIRouter(prefix="/sales-telegram", tags=["sales-telegram"])
 
 
-def build_mini_app_keyboard() -> InlineKeyboardMarkup:
+def build_mini_app_keyboard() -> dict[str, list[list[dict[str, object]]]]:
     settings = get_settings()
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
+    return {
+        "inline_keyboard": [
             [
-                InlineKeyboardButton(
-                    text="Открыть меню",
-                    web_app=WebAppInfo(url=settings.sales_telegram_mini_app_url),
-                )
+                {
+                    "text": "Открыть меню",
+                    "web_app": {"url": settings.sales_telegram_mini_app_url},
+                }
             ]
         ]
-    )
+    }
 
 
 def build_prompt(step: RegistrationStep) -> str:
@@ -44,75 +38,78 @@ def build_prompt(step: RegistrationStep) -> str:
     return "Напишите адрес доставки."
 
 
-def build_fallback_name(message: Message) -> str:
-    user = message.from_user
-    if user is None:
-        return "Клиент Telegram"
-    full_name = " ".join(part for part in [user.first_name, user.last_name] if part)
-    return full_name or user.username or "Клиент Telegram"
+def build_fallback_name(user: dict[str, object]) -> str:
+    first_name = str(user.get("first_name") or "").strip()
+    last_name = str(user.get("last_name") or "").strip()
+    username = str(user.get("username") or "").strip()
+    full_name = " ".join(part for part in [first_name, last_name] if part)
+    return full_name or username or "Клиент Telegram"
 
 
-def build_ipv4_bot(token: str) -> Bot:
-    session = AiohttpSession()
-    session._connector_init["family"] = socket.AF_INET
-    return Bot(token=token, session=session)
+def build_send_message(
+    chat_id: int | str,
+    text: str,
+    *,
+    reply_markup: dict[str, object] | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "method": "sendMessage",
+        "chat_id": chat_id,
+        "text": text,
+    }
+    if reply_markup is not None:
+        payload["reply_markup"] = reply_markup
+    return payload
 
 
-def build_dispatcher(db: AsyncSession) -> Dispatcher:
-    message_router = Router()
+async def handle_sales_message(update: dict, db: AsyncSession) -> dict[str, object]:
+    message = update.get("message")
+    if not isinstance(message, dict):
+        return {"ok": True}
 
-    @message_router.message(CommandStart())
-    async def start(message: Message) -> None:
-        if message.from_user is None:
-            await message.answer("Не удалось определить Telegram ID. Напишите /start ещё раз.")
-            return
-        customer = await get_or_create_sales_customer(
-            db,
-            telegram_id=str(message.from_user.id),
-            fallback_name=build_fallback_name(message),
-        )
+    chat = message.get("chat")
+    from_user = message.get("from")
+    if not isinstance(chat, dict) or not isinstance(from_user, dict):
+        return {"ok": True}
+
+    chat_id = chat.get("id")
+    telegram_id = from_user.get("id")
+    if chat_id is None or telegram_id is None:
+        return {"ok": True}
+
+    text = str(message.get("text") or "").strip()
+    customer = await get_or_create_sales_customer(
+        db,
+        telegram_id=str(telegram_id),
+        fallback_name=build_fallback_name(from_user),
+    )
+
+    if text.split(maxsplit=1)[0].split("@", maxsplit=1)[0] == "/start":
         set_registration_step(customer, RegistrationStep.NAME)
         await db.commit()
-        await message.answer(
-            "Перед заказом сохраним данные для доставки. " + build_prompt(RegistrationStep.NAME)
+        return build_send_message(
+            chat_id,
+            "Перед заказом сохраним данные для доставки. " + build_prompt(RegistrationStep.NAME),
         )
 
-    @message_router.message()
-    async def collect_customer_data(message: Message) -> None:
-        if message.from_user is None:
-            await message.answer("Не удалось определить Telegram ID. Напишите /start ещё раз.")
-            return
-
-        text = (message.text or "").strip()
-        customer = await get_or_create_sales_customer(
-            db,
-            telegram_id=str(message.from_user.id),
-            fallback_name=build_fallback_name(message),
-        )
-        step = get_registration_step(customer) or RegistrationStep.NAME
-
-        if not text:
-            set_registration_step(customer, step)
-            await db.commit()
-            await message.answer(build_prompt(step))
-            return
-
-        next_step = apply_registration_step(customer, step, text)
-        set_registration_step(customer, next_step)
+    step = get_registration_step(customer) or RegistrationStep.NAME
+    if not text:
+        set_registration_step(customer, step)
         await db.commit()
+        return build_send_message(chat_id, build_prompt(step))
 
-        if next_step is not None:
-            await message.answer(build_prompt(next_step))
-            return
+    next_step = apply_registration_step(customer, step, text)
+    set_registration_step(customer, next_step)
+    await db.commit()
 
-        await message.answer(
-            "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
-            reply_markup=build_mini_app_keyboard(),
-        )
+    if next_step is not None:
+        return build_send_message(chat_id, build_prompt(next_step))
 
-    dp = Dispatcher()
-    dp.include_router(message_router)
-    return dp
+    return build_send_message(
+        chat_id,
+        "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
+        reply_markup=build_mini_app_keyboard(),
+    )
 
 
 @router.post("/webhook")
@@ -120,17 +117,11 @@ async def aiogram_webhook(
     update: dict,
     x_telegram_bot_api_secret_token: str | None = Header(default=None),
     db: AsyncSession = Depends(get_db_session),
-) -> dict[str, bool]:
+) -> dict[str, object]:
     settings = get_settings()
     if x_telegram_bot_api_secret_token != settings.sales_telegram_webhook_secret:
         raise HTTPException(status_code=403, detail="Invalid Telegram webhook secret")
     if not settings.sales_telegram_bot_token:
         raise HTTPException(status_code=503, detail="Sales Telegram bot token is not configured")
 
-    bot = build_ipv4_bot(settings.sales_telegram_bot_token)
-    dispatcher = build_dispatcher(db)
-    try:
-        await dispatcher.feed_update(bot, Update.model_validate(update))
-    finally:
-        await bot.session.close()
-    return {"ok": True}
+    return await handle_sales_message(update, db)
