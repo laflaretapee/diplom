@@ -1,6 +1,7 @@
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, Empty, Form, Input, InputNumber, Select, Space, Spin, Typography } from 'antd';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 import { apiClient } from '../api/client';
@@ -22,6 +23,13 @@ type ShopDish = {
 type CatalogResponse = {
   points: ShopPoint[];
   dishes: ShopDish[];
+};
+
+type TelegramCustomerProfile = {
+  name: string;
+  phone?: string | null;
+  delivery_address?: string | null;
+  telegram_id?: string | null;
 };
 
 type CartLine = {
@@ -65,6 +73,7 @@ export function TelegramShopPage() {
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [form] = Form.useForm<CheckoutForm>();
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramId = telegramUser?.id ? String(telegramUser.id) : undefined;
 
   useEffect(() => {
     window.Telegram?.WebApp?.ready?.();
@@ -78,6 +87,37 @@ export function TelegramShopPage() {
       return data;
     },
   });
+
+  const customerQuery = useQuery({
+    queryKey: ['telegram-shop-customer', telegramId],
+    enabled: Boolean(telegramId),
+    retry: false,
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get<TelegramCustomerProfile>('/v1/shop/telegram/customer', {
+          params: { telegram_id: telegramId },
+        });
+        return data;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+  });
+
+  useEffect(() => {
+    const profile = customerQuery.data;
+    if (!profile) {
+      return;
+    }
+    form.setFieldsValue({
+      name: profile.name,
+      phone: profile.phone ?? undefined,
+      delivery_address: profile.delivery_address ?? undefined,
+    });
+  }, [customerQuery.data, form]);
 
   const checkoutMutation = useMutation({
     mutationFn: async (values: CheckoutForm) => {
@@ -99,7 +139,7 @@ export function TelegramShopPage() {
           name: fullName,
           phone: values.phone,
           delivery_address: values.delivery_address,
-          telegram_id: telegramUser?.id ? String(telegramUser.id) : undefined,
+          telegram_id: telegramId,
         },
         items,
         notes: values.notes,
@@ -135,7 +175,7 @@ export function TelegramShopPage() {
       <Space direction="vertical" size={16} style={{ width: '100%', maxWidth: 760, margin: '0 auto' }}>
         <Card style={{ borderRadius: 12 }}>
           <Space direction="vertical" size={8}>
-            <BrandLogo height={42} maxWidth={220} />
+            <BrandLogo height={42} maxWidth={220} variant="light" />
             <Typography.Text style={{ color: '#4f4538' }}>
               Меню доставки в Telegram
             </Typography.Text>

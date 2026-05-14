@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.db.session import get_db_session
-from backend.app.models.customer import CustomerSource
+from backend.app.models.customer import Customer, CustomerSource
 from backend.app.models.dish import Dish
 from backend.app.models.order import Order, PaymentStatus, PaymentType, SourceChannel
 from backend.app.models.point import Point
@@ -22,6 +22,7 @@ from backend.app.modules.shop.schemas import (
     TelegramCatalogResponse,
     TelegramCheckoutRequest,
     TelegramCheckoutResponse,
+    TelegramCustomerProfile,
 )
 
 router = APIRouter(prefix="/shop/telegram", tags=["telegram-shop"])
@@ -47,6 +48,18 @@ async def telegram_catalog(
         points=[ShopPoint.model_validate(point, from_attributes=True) for point in points],
         dishes=[ShopDish.model_validate(dish, from_attributes=True) for dish in dishes],
     )
+
+
+@router.get("/customer", response_model=TelegramCustomerProfile)
+async def telegram_customer(
+    telegram_id: str,
+    db: AsyncSession = Depends(get_db_session),
+) -> TelegramCustomerProfile:
+    result = await db.execute(select(Customer).where(Customer.telegram_id == telegram_id))
+    customer = result.scalar_one_or_none()
+    if customer is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
+    return TelegramCustomerProfile.model_validate(customer, from_attributes=True)
 
 
 @router.post(

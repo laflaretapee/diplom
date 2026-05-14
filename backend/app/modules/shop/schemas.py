@@ -24,6 +24,13 @@ class TelegramCatalogResponse(BaseModel):
     dishes: list[ShopDish]
 
 
+class TelegramCustomerProfile(BaseModel):
+    name: str
+    phone: str | None
+    delivery_address: str | None
+    telegram_id: str | None
+
+
 class TelegramCheckoutItem(BaseModel):
     dish_id: uuid.UUID
     quantity: int = Field(gt=0, le=99)
