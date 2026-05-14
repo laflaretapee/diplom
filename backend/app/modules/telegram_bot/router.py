@@ -202,7 +202,7 @@ async def handle_location(message: Message, db: AsyncSession) -> None:
         )
 
 
-@_dp.message(F.text & ~Command())
+@_dp.message(F.text & ~F.text.startswith("/"))
 async def handle_text(message: Message, db: AsyncSession) -> None:
     if message.from_user is None:
         return
