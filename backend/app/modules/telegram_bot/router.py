@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -136,6 +138,11 @@ async def handle_sales_message(update: dict, db: AsyncSession) -> dict[str, obje
     chat_id = chat.get("id")
     telegram_id = from_user.get("id")
     if chat_id is None or telegram_id is None:
+        return {"ok": True}
+
+    # Skip messages sent while the bot was offline (older than 60 seconds)
+    msg_date = message.get("date")
+    if isinstance(msg_date, int) and time.time() - msg_date > 60:
         return {"ok": True}
 
     text = str(message.get("text") or "").strip()
