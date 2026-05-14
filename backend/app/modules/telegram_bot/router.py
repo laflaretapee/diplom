@@ -145,7 +145,7 @@ async def handle_sales_message(update: dict, db: AsyncSession) -> dict[str, obje
         fallback_name=build_fallback_name(from_user),
     )
 
-    if text.split(maxsplit=1)[0].split("@", maxsplit=1)[0] == "/start":
+    if text and text.split(maxsplit=1)[0].split("@", maxsplit=1)[0] == "/start":
         set_registration_step(customer, RegistrationStep.NAME)
         await db.commit()
         return build_send_message(
