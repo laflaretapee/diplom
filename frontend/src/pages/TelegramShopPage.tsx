@@ -73,7 +73,8 @@ export function TelegramShopPage() {
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [form] = Form.useForm<CheckoutForm>();
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  const telegramId = telegramUser?.id ? String(telegramUser.id) : undefined;
+  const queryTelegramId = new URLSearchParams(window.location.search).get('telegram_id') ?? undefined;
+  const telegramId = telegramUser?.id ? String(telegramUser.id) : queryTelegramId;
 
   useEffect(() => {
     window.Telegram?.WebApp?.ready?.();

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,26 +17,53 @@ from backend.app.modules.telegram_bot.service import (
 router = APIRouter(prefix="/sales-telegram", tags=["sales-telegram"])
 
 
-def build_mini_app_keyboard() -> dict[str, list[list[dict[str, object]]]]:
+def build_mini_app_url(telegram_id: str) -> str:
     settings = get_settings()
+    separator = "&" if "?" in settings.sales_telegram_mini_app_url else "?"
+    return f"{settings.sales_telegram_mini_app_url}{separator}telegram_id={telegram_id}"
+
+
+def build_mini_app_keyboard(telegram_id: str) -> dict[str, list[list[dict[str, object]]]]:
     return {
         "inline_keyboard": [
             [
                 {
                     "text": "Открыть меню",
-                    "web_app": {"url": settings.sales_telegram_mini_app_url},
+                    "web_app": {"url": build_mini_app_url(telegram_id)},
                 }
             ]
         ]
     }
 
 
+def build_phone_keyboard() -> dict[str, object]:
+    return {
+        "keyboard": [[{"text": "Отправить номер", "request_contact": True}]],
+        "resize_keyboard": True,
+        "one_time_keyboard": True,
+    }
+
+
+def build_location_keyboard() -> dict[str, object]:
+    return {
+        "keyboard": [[{"text": "Отправить геолокацию", "request_location": True}]],
+        "resize_keyboard": True,
+        "one_time_keyboard": True,
+    }
+
+
+def build_remove_keyboard() -> dict[str, bool]:
+    return {"remove_keyboard": True}
+
+
 def build_prompt(step: RegistrationStep) -> str:
     if step == RegistrationStep.NAME:
         return "Как вас зовут?"
     if step == RegistrationStep.PHONE:
-        return "Укажите номер телефона для связи."
-    return "Напишите адрес доставки."
+        return "Укажите номер телефона для связи или нажмите кнопку ниже."
+    if step == RegistrationStep.ADDRESS:
+        return "Напишите адрес доставки или отправьте геолокацию кнопкой ниже."
+    return "Добавьте уточнение к адресу: квартира, подъезд, этаж, домофон или комментарий."
 
 
 def build_fallback_name(user: dict[str, object]) -> str:
@@ -60,6 +88,39 @@ def build_send_message(
     if reply_markup is not None:
         payload["reply_markup"] = reply_markup
     return payload
+
+
+async def reverse_geocode(latitude: float, longitude: float) -> str | None:
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={
+                    "format": "jsonv2",
+                    "lat": latitude,
+                    "lon": longitude,
+                    "accept-language": "ru",
+                    "zoom": 18,
+                },
+                headers={"User-Agent": "jsancrm-sales-bot/1.0"},
+            )
+            response.raise_for_status()
+            data = response.json()
+    except Exception:
+        return None
+
+    address = data.get("display_name")
+    return str(address).strip() if address else None
+
+
+def reply_markup_for_step(step: RegistrationStep) -> dict[str, object] | None:
+    if step == RegistrationStep.PHONE:
+        return build_phone_keyboard()
+    if step == RegistrationStep.ADDRESS:
+        return build_location_keyboard()
+    if step == RegistrationStep.ADDRESS_DETAILS:
+        return build_remove_keyboard()
+    return None
 
 
 async def handle_sales_message(update: dict, db: AsyncSession) -> dict[str, object]:
@@ -93,22 +154,42 @@ async def handle_sales_message(update: dict, db: AsyncSession) -> dict[str, obje
         )
 
     step = get_registration_step(customer) or RegistrationStep.NAME
+    contact = message.get("contact") if isinstance(message.get("contact"), dict) else None
+    location = message.get("location") if isinstance(message.get("location"), dict) else None
+
+    if contact and step == RegistrationStep.PHONE:
+        text = str(contact.get("phone_number") or "").strip()
+    elif location and step == RegistrationStep.ADDRESS:
+        latitude = location.get("latitude")
+        longitude = location.get("longitude")
+        if isinstance(latitude, (int, float)) and isinstance(longitude, (int, float)):
+            address = await reverse_geocode(float(latitude), float(longitude))
+            text = address or f"Координаты: {latitude}, {longitude}"
+
     if not text:
         set_registration_step(customer, step)
         await db.commit()
-        return build_send_message(chat_id, build_prompt(step))
+        return build_send_message(
+            chat_id,
+            build_prompt(step),
+            reply_markup=reply_markup_for_step(step),
+        )
 
     next_step = apply_registration_step(customer, step, text)
     set_registration_step(customer, next_step)
     await db.commit()
 
     if next_step is not None:
-        return build_send_message(chat_id, build_prompt(next_step))
+        return build_send_message(
+            chat_id,
+            build_prompt(next_step),
+            reply_markup=reply_markup_for_step(next_step),
+        )
 
     return build_send_message(
         chat_id,
         "Данные сохранены. Теперь можно открыть меню и оформить заказ.",
-        reply_markup=build_mini_app_keyboard(),
+        reply_markup=build_mini_app_keyboard(str(telegram_id)),
     )
 
 

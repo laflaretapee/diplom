@@ -28,14 +28,14 @@ def test_registration_step_marker_preserves_existing_notes() -> None:
 def test_registration_step_marker_replaces_previous_marker() -> None:
     customer = DummyCustomer("sales_bot_step:name\nКомментарий")
 
-    set_registration_step(customer, RegistrationStep.ADDRESS)
+    set_registration_step(customer, RegistrationStep.ADDRESS_DETAILS)
 
-    assert customer.notes == "Комментарий\nsales_bot_step:address"
-    assert get_registration_step(customer) == RegistrationStep.ADDRESS
+    assert customer.notes == "Комментарий\nsales_bot_step:address_details"
+    assert get_registration_step(customer) == RegistrationStep.ADDRESS_DETAILS
 
 
 def test_registration_step_marker_can_be_removed() -> None:
-    customer = DummyCustomer("Комментарий\nsales_bot_step:address")
+    customer = DummyCustomer("Комментарий\nsales_bot_step:address_details")
 
     set_registration_step(customer, None)
 
@@ -55,5 +55,19 @@ def test_apply_registration_step_updates_customer_fields_and_next_step() -> None
     assert next_step == RegistrationStep.ADDRESS
 
     next_step = apply_registration_step(customer, RegistrationStep.ADDRESS, "Пермь, Ленина 1")
+    assert customer.delivery_address == "Пермь, Ленина 1"
+    assert next_step == RegistrationStep.ADDRESS_DETAILS
+
+    next_step = apply_registration_step(customer, RegistrationStep.ADDRESS_DETAILS, "кв. 12")
+    assert customer.delivery_address == "Пермь, Ленина 1, кв. 12"
+    assert next_step is None
+
+
+def test_apply_address_details_does_not_duplicate_empty_details() -> None:
+    customer = DummyCustomer()
+    customer.delivery_address = "Пермь, Ленина 1"
+
+    next_step = apply_registration_step(customer, RegistrationStep.ADDRESS_DETAILS, "  ")
+
     assert customer.delivery_address == "Пермь, Ленина 1"
     assert next_step is None

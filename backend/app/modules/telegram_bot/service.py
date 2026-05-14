@@ -15,6 +15,7 @@ class RegistrationStep(StrEnum):
     NAME = "name"
     PHONE = "phone"
     ADDRESS = "address"
+    ADDRESS_DETAILS = "address_details"
 
 
 class CustomerLike(Protocol):
@@ -61,7 +62,13 @@ def apply_registration_step(
     if step == RegistrationStep.PHONE:
         customer.phone = clean_value
         return RegistrationStep.ADDRESS
-    customer.delivery_address = clean_value
+    if step == RegistrationStep.ADDRESS:
+        customer.delivery_address = clean_value
+        return RegistrationStep.ADDRESS_DETAILS
+    if clean_value and customer.delivery_address:
+        customer.delivery_address = f"{customer.delivery_address}, {clean_value}"
+    elif clean_value:
+        customer.delivery_address = clean_value
     return None
 
 
