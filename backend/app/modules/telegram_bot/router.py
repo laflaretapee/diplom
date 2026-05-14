@@ -259,7 +259,6 @@ async def setup_webhook() -> None:
         "Sales bot webhook set: %s (pending updates dropped)",
         settings.sales_telegram_webhook_url,
     )
-    await bot.session.close()
 
 
 # ── FastAPI endpoint ──────────────────────────────────────────────────────────
