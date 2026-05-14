@@ -9,6 +9,7 @@ import { useAuthStore } from '../auth/store';
 import type { LoginRequest } from '../auth/types';
 import { BrandLogo } from '../components/BrandLogo';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useThemeStore } from '../store/themeStore';
 
 type LoginFormValues = LoginRequest;
 
@@ -40,6 +41,7 @@ export function LoginPage() {
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
   const login = useAuthStore((state) => state.login);
+  const isDark = useThemeStore((state) => state.isDark);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,20 +85,20 @@ export function LoginPage() {
         <Card
           bordered={false}
           style={{
-            boxShadow: '0 18px 56px rgba(0, 0, 0, 0.28)',
-            background: '#161616',
-            border: '1px solid #2A2A2A',
+            boxShadow: '0 18px 56px var(--j-shadow)',
+            background: 'var(--j-surface-panel)',
+            border: '1px solid var(--j-surface-high)',
           }}
           styles={{ body: { padding: isMobile ? 20 : 24 } }}
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <BrandLogo height={isMobile ? 30 : 38} maxWidth={isMobile ? 168 : 220} />
-              <Typography.Title level={isMobile ? 4 : 3} style={{ marginBottom: 0, color: '#E5E2E1' }}>
+              <BrandLogo height={isMobile ? 30 : 38} maxWidth={isMobile ? 168 : 220} variant={isDark ? 'dark' : 'light'} />
+              <Typography.Title level={isMobile ? 4 : 3} style={{ marginBottom: 0, color: 'var(--j-text)' }}>
                 Вход
               </Typography.Title>
             </div>
-            <Typography.Text style={{ color: '#BFB6A8' }}>
+            <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
               Используйте свою рабочую учётную запись. После входа система откроет раздел,
               соответствующий вашей роли.
             </Typography.Text>

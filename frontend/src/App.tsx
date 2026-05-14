@@ -29,7 +29,7 @@ function RouteErrorFallback() {
         display: 'grid',
         placeItems: 'center',
         background:
-          'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, #131313 0%, #0E0E0E 100%)',
+          'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, var(--j-surface-muted) 0%, var(--j-surface-strong) 100%)',
       }}
     >
       <Result
@@ -74,12 +74,12 @@ function RouteRoot() {
           placeItems: 'center',
           gap: 12,
           background:
-            'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, #131313 0%, #0E0E0E 100%)',
+            'radial-gradient(circle at top left, rgba(232, 184, 109, 0.08), transparent 28%), linear-gradient(180deg, var(--j-surface-muted) 0%, var(--j-surface-strong) 100%)',
         }}
       >
         <div style={{ display: 'grid', placeItems: 'center', gap: 12 }}>
           <Spin size="large" tip="Восстанавливаем сессию" />
-          <Typography.Text style={{ color: '#BFB6A8' }}>
+          <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
             Проверяем refresh-сессию и права доступа
           </Typography.Text>
         </div>

@@ -27,6 +27,7 @@ import {
 
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../auth/store';
+import { useThemeStore } from '../store/themeStore';
 import { ensureArray } from '../utils/ensureArray';
 
 type SourceChannel = 'website' | 'mobile_app' | 'telegram' | 'vk' | 'pos';
@@ -86,7 +87,8 @@ type UpdateDishFormValues = {
   available_channels: SourceChannel[];
 };
 
-const pageBackground = 'linear-gradient(180deg, #0e0e0e 0%, #131313 55%, #0e0e0e 100%)';
+const pageBackground =
+  'linear-gradient(180deg, var(--j-surface-muted) 0%, var(--j-surface-strong) 55%, var(--j-surface-muted) 100%)';
 
 const CHANNEL_LABELS: Record<SourceChannel, string> = {
   website: 'Сайт',
@@ -276,6 +278,7 @@ async function fetchDishIngredients(
 
 export function DishesPage() {
   const token = useAuthStore((state) => state.token);
+  const isDark = useThemeStore((state) => state.isDark);
   const queryClient = useQueryClient();
   const [createForm] = Form.useForm<CreateDishFormValues>();
   const [editForm] = Form.useForm<UpdateDishFormValues>();
@@ -427,10 +430,10 @@ export function DishesPage() {
       key: 'name',
       render: (_value: string, record: DishRead) => (
         <Space direction="vertical" size={2}>
-          <Typography.Text strong style={{ color: '#E5E2E1' }}>
+          <Typography.Text strong style={{ color: 'var(--j-text)' }}>
             {record.name}
           </Typography.Text>
-          <Typography.Text style={{ color: '#8F8578', fontSize: 12 }}>
+          <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 12 }}>
             {record.description?.trim() || 'Без описания'}
           </Typography.Text>
         </Space>
@@ -465,8 +468,8 @@ export function DishesPage() {
                 key={channel}
                 style={{
                   marginInlineEnd: 0,
-                  background: '#2A2418',
-                  borderColor: '#4F4538',
+                  background: 'var(--j-warning-bg)',
+                  borderColor: 'var(--j-border)',
                   color: '#FFD598',
                 }}
               >
@@ -499,16 +502,16 @@ export function DishesPage() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: antdTheme.darkAlgorithm,
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          colorBgBase: '#0E0E0E',
-          colorBgContainer: '#201F1F',
-          colorBgElevated: '#2A2A2A',
-          colorText: '#E5E2E1',
-          colorTextSecondary: '#D3C4B3',
-          colorBorder: '#4F4538',
+          colorBgBase: 'var(--j-surface-muted)',
+          colorBgContainer: 'var(--j-surface-panel)',
+          colorBgElevated: 'var(--j-surface-high)',
+          colorText: 'var(--j-text)',
+          colorTextSecondary: 'var(--j-text-secondary)',
+          colorBorder: 'var(--j-border)',
           colorPrimary: '#E8B86D',
-          colorPrimaryBg: '#2A2418',
+          colorPrimaryBg: 'var(--j-warning-bg)',
           colorLink: '#FFD598',
           borderRadius: 10,
           fontFamily:
@@ -517,14 +520,14 @@ export function DishesPage() {
         },
         components: {
           Card: {
-            colorBgContainer: '#201F1F',
-            headerBg: '#201F1F',
+            colorBgContainer: 'var(--j-surface-panel)',
+            headerBg: 'var(--j-surface-panel)',
           },
           Table: {
-            headerBg: '#171717',
-            headerColor: '#E5E2E1',
-            borderColor: '#2E2922',
-            rowHoverBg: '#1A1A1A',
+            headerBg: 'var(--j-surface-high)',
+            headerColor: 'var(--j-text)',
+            borderColor: 'var(--j-border)',
+            rowHoverBg: 'var(--j-surface-muted)',
           },
         },
       }}
@@ -535,16 +538,16 @@ export function DishesPage() {
           style={{
             background: pageBackground,
             border: '1px solid rgba(79, 69, 56, 0.35)',
-            boxShadow: '0 18px 48px rgba(0, 0, 0, 0.28)',
+            boxShadow: '0 18px 48px var(--j-shadow)',
           }}
         >
           <Row gutter={[16, 16]} align="middle" justify="space-between">
             <Col xs={24} xl={14}>
               <Space direction="vertical" size={6}>
-                <Typography.Title level={2} style={{ margin: 0, color: '#E5E2E1' }}>
+                <Typography.Title level={2} style={{ margin: 0, color: 'var(--j-text)' }}>
                   Блюда и каналы продаж
                 </Typography.Title>
-                <Typography.Text style={{ color: '#BFB6A8', lineHeight: 1.7 }}>
+                <Typography.Text style={{ color: 'var(--j-text-secondary)', lineHeight: 1.7 }}>
                   Управление ассортиментом для demo: создание блюда, переключение активности,
                   публикация по каналам и просмотр техкарты.
                 </Typography.Text>
@@ -673,7 +676,7 @@ export function DishesPage() {
               title="Список блюд"
               extra={
                 selectedDish ? (
-                  <Typography.Text style={{ color: '#8F8578' }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)' }}>
                     Выбрано: {selectedDish.name}
                   </Typography.Text>
                 ) : null
@@ -821,7 +824,7 @@ export function DishesPage() {
               }
               extra={
                 selectedDish ? (
-                  <Typography.Text style={{ color: '#8F8578' }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)' }}>
                     {selectedDish.name}
                   </Typography.Text>
                 ) : null

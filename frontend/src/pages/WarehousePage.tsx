@@ -25,6 +25,7 @@ import {
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
+import { useThemeStore } from '../store/themeStore';
 import { ensureArray } from '../utils/ensureArray';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -239,11 +240,13 @@ async function adjustStock(payload: MovementPayload, token: string | null): Prom
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const pageBackground = 'linear-gradient(180deg, #0e0e0e 0%, #131313 55%, #0e0e0e 100%)';
+const pageBackground =
+  'linear-gradient(180deg, var(--j-surface-muted) 0%, var(--j-surface-strong) 55%, var(--j-surface-muted) 100%)';
 
 export function WarehousePage() {
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
+  const isDark = useThemeStore((state) => state.isDark);
   const canAccess = hasWarehouseAccess(role);
 
   const [selectedPointId, setSelectedPointId] = useState<string>('');
@@ -495,16 +498,16 @@ export function WarehousePage() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: antdTheme.darkAlgorithm,
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          colorBgBase: '#0E0E0E',
-          colorBgContainer: '#201F1F',
-          colorBgElevated: '#2A2A2A',
-          colorText: '#E5E2E1',
-          colorTextSecondary: '#D3C4B3',
-          colorBorder: '#4f4538',
+          colorBgBase: 'var(--j-surface-muted)',
+          colorBgContainer: 'var(--j-surface-panel)',
+          colorBgElevated: 'var(--j-surface-high)',
+          colorText: 'var(--j-text)',
+          colorTextSecondary: 'var(--j-text-secondary)',
+          colorBorder: 'var(--j-border)',
           colorPrimary: '#E8B86D',
-          colorPrimaryBg: '#2A2418',
+          colorPrimaryBg: 'var(--j-warning-bg)',
           colorLink: '#FFD598',
           colorWarning: '#E8B86D',
           borderRadius: 10,
@@ -514,30 +517,30 @@ export function WarehousePage() {
         },
         components: {
           Card: {
-            colorBgContainer: '#201F1F',
-            headerBg: '#201F1F',
+            colorBgContainer: 'var(--j-surface-panel)',
+            headerBg: 'var(--j-surface-panel)',
           },
           Table: {
-            headerBg: '#2A2A2A',
-            headerColor: '#D3C4B3',
-            rowHoverBg: '#2A2A2A',
+            headerBg: 'var(--j-surface-high)',
+            headerColor: 'var(--j-text-secondary)',
+            rowHoverBg: 'var(--j-surface-high)',
           },
           Input: {
-            colorBgContainer: '#2A2A2A',
-            colorBorder: '#4f4538',
+            colorBgContainer: 'var(--j-surface-high)',
+            colorBorder: 'var(--j-border)',
             hoverBorderColor: '#FFD598',
             activeBorderColor: '#E8B86D',
           },
           Select: {
-            colorBgContainer: '#2A2A2A',
-            colorBorder: '#4f4538',
-            optionSelectedBg: '#2A2418',
-            optionActiveBg: '#2A2A2A',
+            colorBgContainer: 'var(--j-surface-high)',
+            colorBorder: 'var(--j-border)',
+            optionSelectedBg: 'var(--j-warning-bg)',
+            optionActiveBg: 'var(--j-surface-high)',
           },
           Button: {
-            defaultBg: '#2A2A2A',
-            defaultColor: '#E5E2E1',
-            defaultBorderColor: '#4f4538',
+            defaultBg: 'var(--j-surface-high)',
+            defaultColor: 'var(--j-text)',
+            defaultBorderColor: 'var(--j-border)',
           },
         },
       }}
@@ -547,7 +550,7 @@ export function WarehousePage() {
           minHeight: '100%',
           padding: 24,
           background: pageBackground,
-          color: '#E5E2E1',
+          color: 'var(--j-text)',
           fontFamily:
             'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         }}
@@ -558,21 +561,21 @@ export function WarehousePage() {
               position: 'sticky',
               top: 16,
               zIndex: 5,
-              background: 'rgba(14, 14, 14, 0.76)',
-              borderColor: '#4f4538',
+              background: 'var(--j-header-glass)',
+              borderColor: 'var(--j-border)',
               backdropFilter: 'blur(18px)',
-              boxShadow: '0 24px 48px rgba(0, 0, 0, 0.35)',
+              boxShadow: '0 24px 48px var(--j-shadow-strong)',
             }}
             styles={{ body: { padding: 16 } }}
           >
             <Row gutter={[16, 16]} align="middle">
               <Col xs={24} lg={10}>
                 <Space direction="vertical" size={2} style={{ width: '100%' }}>
-                  <Typography.Text style={{ color: '#D3C4B3', textTransform: 'uppercase', letterSpacing: 1.6, fontSize: 11 }}>
+                  <Typography.Text style={{ color: 'var(--j-text-secondary)', textTransform: 'uppercase', letterSpacing: 1.6, fontSize: 11 }}>
                     Склад
                   </Typography.Text>
                   <Space align="center" size={10} wrap>
-                    <Typography.Title level={3} style={{ margin: 0, color: '#E5E2E1' }}>
+                    <Typography.Title level={3} style={{ margin: 0, color: 'var(--j-text)' }}>
                       Управление запасами
                     </Typography.Title>
                     <Tag
@@ -593,7 +596,7 @@ export function WarehousePage() {
 
               <Col xs={24} lg={10}>
                 <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                  <Typography.Text style={{ color: '#D3C4B3', fontSize: 12 }}>
+                  <Typography.Text style={{ color: 'var(--j-text-secondary)', fontSize: 12 }}>
                     Выбор точки
                   </Typography.Text>
                   <Select
@@ -619,9 +622,9 @@ export function WarehousePage() {
                   loading={refreshLoading}
                   style={{
                     height: 42,
-                    border: '1px solid #4f4538',
+                    border: '1px solid var(--j-border)',
                     background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.95) 0%, rgba(32, 31, 31, 0.95) 100%)',
-                    color: '#E5E2E1',
+                    color: 'var(--j-text)',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
                   }}
                 >
@@ -644,8 +647,8 @@ export function WarehousePage() {
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={12}>
               <Card
-                title={<span style={{ color: '#E5E2E1' }}>Приход</span>}
-                style={{ borderColor: '#4f4538' }}
+                title={<span style={{ color: 'var(--j-text)' }}>Приход</span>}
+                style={{ borderColor: 'var(--j-border)' }}
                 styles={{ body: { paddingTop: 16 } }}
               >
                 {supplyNotice ? (
@@ -740,8 +743,8 @@ export function WarehousePage() {
 
             <Col xs={24} xl={12}>
               <Card
-                title={<span style={{ color: '#E5E2E1' }}>Корректировка остатка</span>}
-                style={{ borderColor: '#4f4538' }}
+                title={<span style={{ color: 'var(--j-text)' }}>Корректировка остатка</span>}
+                style={{ borderColor: 'var(--j-border)' }}
                 styles={{ body: { paddingTop: 16 } }}
               >
                 {adjustNotice ? (
@@ -832,8 +835,8 @@ export function WarehousePage() {
           <Row gutter={[16, 16]}>
             <Col xs={24} xl={10}>
               <Card
-                title={<span style={{ color: '#E5E2E1' }}>Каталог ингредиентов</span>}
-                style={{ borderColor: '#4f4538' }}
+                title={<span style={{ color: 'var(--j-text)' }}>Каталог ингредиентов</span>}
+                style={{ borderColor: 'var(--j-border)' }}
                 styles={{ body: { paddingTop: 12 } }}
               >
                 {ingredientsError ? (
@@ -863,8 +866,8 @@ export function WarehousePage() {
 
             <Col xs={24} xl={14}>
               <Card
-                title={<span style={{ color: '#E5E2E1' }}>Остатки по точке</span>}
-                style={{ borderColor: '#4f4538' }}
+                title={<span style={{ color: 'var(--j-text)' }}>Остатки по точке</span>}
+                style={{ borderColor: 'var(--j-border)' }}
                 styles={{ body: { paddingTop: 12 } }}
               >
                 {lowStockItems.length > 0 ? (
@@ -908,8 +911,8 @@ export function WarehousePage() {
           </Row>
 
           <Card
-            title={<span style={{ color: '#E5E2E1' }}>История движений</span>}
-            style={{ borderColor: '#4f4538' }}
+            title={<span style={{ color: 'var(--j-text)' }}>История движений</span>}
+            style={{ borderColor: 'var(--j-border)' }}
             styles={{ body: { paddingTop: 12 } }}
           >
             {movementsError ? (

@@ -20,6 +20,7 @@ import { useAuthStore } from '../auth/store';
 import type { Role } from '../auth/types';
 import { BrandLogo } from '../components/BrandLogo';
 import { useIsMobileLayout } from '../hooks/useIsMobileLayout';
+import { useThemeStore } from '../store/themeStore';
 import { ensureArray } from '../utils/ensureArray';
 
 type AssistantEvidence = {
@@ -262,8 +263,8 @@ function MonoBadge({
   tone?: 'neutral' | 'accent' | 'warning' | 'danger';
 }) {
   const tones: Record<typeof tone, { background: string; border: string; color: string }> = {
-    neutral: { background: '#2A2A2A', border: '#4F4538', color: '#D3C4B3' },
-    accent: { background: '#2A2418', border: '#8A6A2A', color: '#FFD598' },
+    neutral: { background: 'var(--j-surface-high)', border: 'var(--j-border)', color: 'var(--j-text-secondary)' },
+    accent: { background: 'var(--j-warning-bg)', border: '#8A6A2A', color: '#FFD598' },
     warning: { background: '#32261B', border: '#8A6A2A', color: '#E8B86D' },
     danger: { background: '#331E1E', border: '#7E3434', color: '#FFB4AB' },
   };
@@ -305,8 +306,8 @@ function AccessDeniedCard({ roleLabel }: { roleLabel: string }) {
         style={{
           width: '100%',
           maxWidth: 620,
-          background: '#131313',
-          border: '1px solid #2A2A2A',
+          background: 'var(--j-surface-strong)',
+          border: '1px solid var(--j-surface-high)',
           boxShadow: '0 24px 70px rgba(0, 0, 0, 0.30)',
         }}
       >
@@ -319,23 +320,23 @@ function AccessDeniedCard({ roleLabel }: { roleLabel: string }) {
                 borderRadius: 12,
                 display: 'grid',
                 placeItems: 'center',
-                background: '#2A2418',
+                background: 'var(--j-warning-bg)',
                 color: '#FFD598',
-                border: '1px solid #4F4538',
+                border: '1px solid var(--j-border)',
               }}
             >
               <CloseCircleOutlined />
             </div>
             <div>
-              <Typography.Title level={4} style={{ color: '#E5E2E1', margin: 0 }}>
+              <Typography.Title level={4} style={{ color: 'var(--j-text)', margin: 0 }}>
                 Доступ закрыт
               </Typography.Title>
-              <Typography.Text style={{ color: '#BFB6A8' }}>
+              <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
                 Этот ассистент доступен только суперадминистратору и франчайзи.
               </Typography.Text>
             </div>
           </Space>
-          <Typography.Paragraph style={{ color: '#D3C4B3', marginBottom: 0 }}>
+          <Typography.Paragraph style={{ color: 'var(--j-text-secondary)', marginBottom: 0 }}>
             Текущая роль: <strong>{roleLabel}</strong>. Для этой роли страница остаётся
             недоступной, чтобы сохранить демо-контур аналитического ассистента в рамках
             согласованного сценария.
@@ -370,18 +371,18 @@ function UserBubble({
       >
         <div
           style={{
-            background: '#201F1F',
-            border: '1px solid #2A2A2A',
+            background: 'var(--j-surface-panel)',
+            border: '1px solid var(--j-surface-high)',
             borderRadius: 18,
             borderTopRightRadius: 4,
             padding: compact ? '12px 14px' : '14px 16px',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.18)',
+            boxShadow: '0 12px 30px var(--j-shadow)',
           }}
         >
           <Typography.Paragraph
             style={{
               marginBottom: 0,
-              color: '#E5E2E1',
+              color: 'var(--j-text)',
               whiteSpace: 'pre-wrap',
               fontSize: 14,
               lineHeight: 1.65,
@@ -390,7 +391,7 @@ function UserBubble({
             {question}
           </Typography.Paragraph>
         </div>
-        <Typography.Text style={{ color: '#9B8F7F', fontFamily: '"JetBrains Mono", monospace', fontSize: 10 }}>
+        <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 10 }}>
           {formatTime(askedAt)} • Вы
         </Typography.Text>
       </div>
@@ -421,13 +422,13 @@ function EvidenceGrid({
         <div
           key={`${item.label}-${item.value}`}
           style={{
-            background: '#131313',
-            border: '1px solid #2A2A2A',
+            background: 'var(--j-surface-strong)',
+            border: '1px solid var(--j-surface-high)',
             borderRadius: 14,
             padding: 14,
           }}
         >
-          <Typography.Text style={{ color: '#9B8F7F', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+          <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
             {item.label}
           </Typography.Text>
           <Typography.Paragraph
@@ -443,7 +444,7 @@ function EvidenceGrid({
             {item.value}
           </Typography.Paragraph>
           {item.detail ? (
-            <Typography.Text style={{ color: '#D3C4B3', fontSize: 12, lineHeight: 1.5 }}>
+            <Typography.Text style={{ color: 'var(--j-text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
               {item.detail}
             </Typography.Text>
           ) : null}
@@ -467,9 +468,9 @@ function SuggestionsRow({ suggestions, onPick }: { suggestions: string[]; onPick
           onClick={() => onPick(suggestion)}
           style={{
             borderRadius: 999,
-            background: '#2A2A2A',
-            borderColor: '#4F4538',
-            color: '#E5E2E1',
+            background: 'var(--j-surface-high)',
+            borderColor: 'var(--j-border)',
+            color: 'var(--j-text)',
           }}
         >
           {suggestion}
@@ -500,8 +501,8 @@ function AssistantBubble({
             borderRadius: 12,
             display: 'grid',
             placeItems: 'center',
-            background: 'linear-gradient(135deg, #2A2418 0%, #201F1F 100%)',
-            border: '1px solid #4F4538',
+            background: 'linear-gradient(135deg, var(--j-warning-bg) 0%, var(--j-surface-panel) 100%)',
+            border: '1px solid var(--j-border)',
             color: '#E8B86D',
             flexShrink: 0,
           }}
@@ -512,8 +513,8 @@ function AssistantBubble({
           <div
             style={{
               maxWidth: compact ? '100%' : 'min(900px, 92%)',
-              background: '#201F1F',
-              border: '1px solid #2A2A2A',
+              background: 'var(--j-surface-panel)',
+              border: '1px solid var(--j-surface-high)',
               borderRadius: 18,
               borderTopLeftRadius: 4,
               padding: compact ? '12px 14px' : '14px 16px',
@@ -524,7 +525,7 @@ function AssistantBubble({
                 <MonoBadge tone="accent">АНАЛИЗ</MonoBadge>
                 <MonoBadge>ОЖИДАЕМ МОДЕЛЬ</MonoBadge>
               </Space>
-              <Typography.Text style={{ color: '#D3C4B3' }}>
+              <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
                 Ассистент собирает контекст и формирует ответ.
               </Typography.Text>
             </Space>
@@ -555,7 +556,7 @@ function AssistantBubble({
         <div
           style={{
             maxWidth: compact ? '100%' : 'min(900px, 92%)',
-            background: '#201F1F',
+            background: 'var(--j-surface-panel)',
             border: '1px solid #4A2A2A',
             borderRadius: 18,
             borderTopLeftRadius: 4,
@@ -599,12 +600,12 @@ function AssistantBubble({
       <div style={{ flex: 1, maxWidth: compact ? '100%' : 'min(980px, 92%)' }}>
         <div
           style={{
-            background: '#201F1F',
-            border: '1px solid #2A2A2A',
+            background: 'var(--j-surface-panel)',
+            border: '1px solid var(--j-surface-high)',
             borderRadius: 18,
             borderTopLeftRadius: 4,
             padding: compact ? 14 : 16,
-            boxShadow: '0 18px 40px rgba(0, 0, 0, 0.18)',
+            boxShadow: '0 18px 40px var(--j-shadow)',
           }}
         >
           <Space direction="vertical" size={14} style={{ width: '100%' }}>
@@ -616,7 +617,7 @@ function AssistantBubble({
             <Typography.Paragraph
               style={{
                 marginBottom: 0,
-                color: '#E5E2E1',
+                color: 'var(--j-text)',
                 whiteSpace: 'pre-wrap',
                 fontSize: 14,
                 lineHeight: 1.7,
@@ -633,7 +634,7 @@ function AssistantBubble({
                 flexWrap: 'wrap',
               }}
             >
-              <Typography.Text style={{ color: '#9B8F7F', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+              <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
                 Основания
               </Typography.Text>
             </div>
@@ -642,8 +643,8 @@ function AssistantBubble({
               style={{
                 padding: compact ? 12 : 14,
                 borderRadius: 14,
-                background: '#2A2418',
-                border: '1px solid #4F4538',
+                background: 'var(--j-warning-bg)',
+                border: '1px solid var(--j-border)',
               }}
             >
               <Typography.Text
@@ -684,8 +685,8 @@ function EmptyState({
     <Card
       bordered={false}
       style={{
-        background: '#131313',
-        border: '1px solid #2A2A2A',
+        background: 'var(--j-surface-strong)',
+        border: '1px solid var(--j-surface-high)',
         boxShadow: '0 18px 40px rgba(0, 0, 0, 0.20)',
       }}
     >
@@ -698,18 +699,18 @@ function EmptyState({
               borderRadius: 14,
               display: 'grid',
               placeItems: 'center',
-              background: '#2A2418',
+              background: 'var(--j-warning-bg)',
               color: '#FFD598',
-              border: '1px solid #4F4538',
+              border: '1px solid var(--j-border)',
             }}
           >
             <SearchOutlined />
           </div>
           <div>
-            <Typography.Title level={4} style={{ color: '#E5E2E1', margin: 0 }}>
+            <Typography.Title level={4} style={{ color: 'var(--j-text)', margin: 0 }}>
               Спросите ассистента
             </Typography.Title>
-            <Typography.Text style={{ color: '#BFB6A8' }}>
+            <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
               Контекст: <strong>{scopeLabel}</strong>. Используйте готовые сценарии слева или
               задайте свой аналитический вопрос.
             </Typography.Text>
@@ -719,13 +720,13 @@ function EmptyState({
           style={{
             padding: 12,
             borderRadius: 14,
-            border: '1px solid #2A2A2A',
-            background: '#1A1A1A',
+            border: '1px solid var(--j-surface-high)',
+            background: 'var(--j-surface-muted)',
           }}
         >
           <Space align="center" size={8} wrap>
             <MonoBadge tone={statusTone}>{statusLabel}</MonoBadge>
-            <Typography.Text style={{ color: '#BFB6A8', fontSize: 12, lineHeight: 1.5 }}>
+            <Typography.Text style={{ color: 'var(--j-text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
               {statusDescription}
             </Typography.Text>
           </Space>
@@ -738,6 +739,7 @@ function EmptyState({
 export function AIAssistantPage() {
   const token = useAuthStore((state) => state.token);
   const role = useAuthStore((state) => state.role);
+  const isDark = useThemeStore((state) => state.isDark);
   const isMobileLayout = useIsMobileLayout('lg');
   const isAllowed = role ? ALLOWED_ROLES.includes(role) : false;
   const inputRef = useRef<InputRef>(null);
@@ -907,15 +909,15 @@ export function AIAssistantPage() {
         style={{
           width: isMobileLayout ? '100%' : 298,
           minWidth: isMobileLayout ? 0 : 298,
-          background: '#0E0E0E',
-          border: '1px solid #2A2A2A',
+          background: 'var(--j-surface-panel)',
+          border: '1px solid var(--j-surface-high)',
           borderRadius: isMobileLayout ? 18 : 20,
           padding: isMobileLayout ? 14 : 18,
           display: 'flex',
           flexDirection: 'column',
           gap: isMobileLayout ? 14 : 18,
           overflow: isMobileLayout ? 'hidden' : 'auto',
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.28)',
+          boxShadow: '0 24px 64px var(--j-shadow)',
           position: 'relative',
           zIndex: 1,
         }}
@@ -937,12 +939,12 @@ export function AIAssistantPage() {
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <BrandLogo height={26} maxWidth={142} />
+                <BrandLogo height={26} maxWidth={142} variant={isDark ? 'dark' : 'light'} />
                 <Typography.Title level={4} style={{ color: '#E8B86D', margin: 0 }}>
                   ИИ
                 </Typography.Title>
               </div>
-              <Typography.Text style={{ color: '#9B8F7F', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+              <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
                 Аналитическая консоль
               </Typography.Text>
             </div>
@@ -965,9 +967,9 @@ export function AIAssistantPage() {
                     width: '100%',
                     padding: 12,
                     borderRadius: 14,
-                    background: '#201F1F',
-                    border: '1px solid #2A2A2A',
-                    color: '#E5E2E1',
+                    background: 'var(--j-surface-panel)',
+                    border: '1px solid var(--j-surface-high)',
+                    color: 'var(--j-text)',
                     textAlign: 'left',
                     cursor: 'pointer',
                     minHeight: isMobileLayout ? 108 : undefined,
@@ -976,11 +978,11 @@ export function AIAssistantPage() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <HistoryOutlined style={{ color: '#E8B86D', flexShrink: 0 }} />
-                    <Typography.Text strong style={{ color: '#E5E2E1', fontSize: 13 }}>
+                    <Typography.Text strong style={{ color: 'var(--j-text)', fontSize: 13 }}>
                       {scenario.title}
                     </Typography.Text>
                   </div>
-                  <Typography.Text style={{ color: '#BFB6A8', fontSize: 11, lineHeight: 1.4, display: 'block', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                  <Typography.Text style={{ color: 'var(--j-text-secondary)', fontSize: 11, lineHeight: 1.4, display: 'block', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                     {scenario.question}
                   </Typography.Text>
                 </button>
@@ -993,17 +995,17 @@ export function AIAssistantPage() {
           <Card
             bordered={false}
             style={{
-              background: '#131313',
-              border: '1px solid #2A2A2A',
+              background: 'var(--j-surface-strong)',
+              border: '1px solid var(--j-surface-high)',
             }}
             styles={{ body: { padding: 14 } }}
           >
             <Space direction="vertical" size={8} style={{ width: '100%' }}>
               <PageSectionLabel>Текущий доступ</PageSectionLabel>
-              <Typography.Text style={{ color: '#E5E2E1', fontSize: 13 }}>
+              <Typography.Text style={{ color: 'var(--j-text)', fontSize: 13 }}>
                 {roleMeta[role].label}
               </Typography.Text>
-              <Typography.Text style={{ color: '#9B8F7F', fontSize: 12, lineHeight: 1.5 }}>
+              <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 12, lineHeight: 1.5 }}>
                 {roleMeta[role].description}
               </Typography.Text>
               <MonoBadge tone="accent">{roleMeta[role].focus}</MonoBadge>
@@ -1026,10 +1028,10 @@ export function AIAssistantPage() {
         <Card
           bordered={false}
           style={{
-            background: 'rgba(14, 14, 14, 0.82)',
+            background: 'var(--j-header-glass)',
             backdropFilter: 'blur(18px)',
-            border: '1px solid #2A2A2A',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.18)',
+            border: '1px solid var(--j-surface-high)',
+            boxShadow: '0 20px 50px var(--j-shadow)',
             position: isMobileLayout ? 'relative' : 'sticky',
             top: isMobileLayout ? undefined : 0,
             zIndex: 20,
@@ -1052,15 +1054,15 @@ export function AIAssistantPage() {
               }}
             >
               <div>
-                <Typography.Title level={4} style={{ color: '#E5E2E1', margin: 0 }}>
+                <Typography.Title level={4} style={{ color: 'var(--j-text)', margin: 0 }}>
                   ИИ-ассистент
                 </Typography.Title>
-                <Typography.Text style={{ color: '#BFB6A8' }}>
+                <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
                   Диалог для аналитики, поиска причин и рекомендуемых действий.
                 </Typography.Text>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                   <MonoBadge tone={assistantStatus.tone}>{assistantStatus.label}</MonoBadge>
-                  <Typography.Text style={{ color: '#BFB6A8', fontSize: 12, lineHeight: 1.5 }}>
+                  <Typography.Text style={{ color: 'var(--j-text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
                     {assistantStatus.description}
                   </Typography.Text>
                 </div>
@@ -1073,7 +1075,7 @@ export function AIAssistantPage() {
                     loading={pointsQuery.isLoading}
                     options={pointOptions}
                     style={{ minWidth: 240 }}
-                    dropdownStyle={{ background: '#131313' }}
+                    dropdownStyle={{ background: 'var(--j-surface-strong)' }}
                   />
                   <MonoBadge tone="neutral">{selectedPointLabel}</MonoBadge>
                   <MonoBadge tone={latestDoneTurn?.response?.provider ? 'accent' : 'neutral'}>
@@ -1091,7 +1093,7 @@ export function AIAssistantPage() {
                   loading={pointsQuery.isLoading}
                   options={pointOptions}
                   style={{ width: '100%' }}
-                  dropdownStyle={{ background: '#131313' }}
+                  dropdownStyle={{ background: 'var(--j-surface-strong)' }}
                 />
                 <div
                   style={{
@@ -1175,8 +1177,8 @@ export function AIAssistantPage() {
               <div
                 style={{
                   position: 'relative',
-                  background: '#2A2A2A',
-                  border: '1px solid #4F4538',
+                  background: 'var(--j-surface-high)',
+                  border: '1px solid var(--j-border)',
                   borderRadius: 18,
                   padding: isMobileLayout ? 12 : 12,
                   boxShadow: '0 24px 60px rgba(0, 0, 0, 0.26)',
@@ -1198,9 +1200,9 @@ export function AIAssistantPage() {
                         borderRadius: 12,
                         display: 'grid',
                         placeItems: 'center',
-                        background: '#131313',
+                        background: 'var(--j-surface-strong)',
                         color: '#E8B86D',
-                        border: '1px solid #4F4538',
+                        border: '1px solid var(--j-border)',
                         flexShrink: 0,
                       }}
                     >
@@ -1222,7 +1224,7 @@ export function AIAssistantPage() {
                       background: 'transparent',
                       border: 'none',
                       boxShadow: 'none',
-                      color: '#E5E2E1',
+                      color: 'var(--j-text)',
                       fontSize: 14,
                       minHeight: isMobileLayout ? 48 : undefined,
                     }}
@@ -1260,7 +1262,7 @@ export function AIAssistantPage() {
                     <MonoBadge tone="neutral">Чат ассистента</MonoBadge>
                     <MonoBadge tone="neutral">{`Контур: ${selectedPointLabel}`}</MonoBadge>
                   </div>
-                  <Typography.Text style={{ color: '#9B8F7F', fontSize: 11 }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11 }}>
                     {chatMutation.isPending
                       ? 'Генерируем ответ...'
                       : isMobileLayout

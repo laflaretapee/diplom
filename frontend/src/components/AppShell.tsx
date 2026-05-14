@@ -113,7 +113,13 @@ export function AppShell() {
     navigate('/login', { replace: true });
   };
 
-  const brandBlock = <BrandLogo height={isMobile ? 32 : 46} maxWidth={isMobile ? 174 : 224} />;
+  const brandBlock = (
+    <BrandLogo
+      height={isMobile ? 32 : 46}
+      maxWidth={isMobile ? 174 : 224}
+      variant={isDark ? 'dark' : 'light'}
+    />
+  );
 
   const siderBg = isDark ? '#0E0E0E' : '#FCF9F8';
   const siderBorder = isDark ? 'rgba(79, 69, 56, 0.35)' : '#E5E2E1';

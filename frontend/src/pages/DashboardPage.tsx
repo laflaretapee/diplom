@@ -79,14 +79,14 @@ const CHANNEL_LABELS: Record<string, string> = {
 };
 
 const DASHBOARD_SHELL_STYLE = {
-  background: '#131313',
-  border: '1px solid #2A2A2A',
-  boxShadow: '0 18px 48px rgba(0, 0, 0, 0.28)',
+  background: 'var(--j-surface-strong)',
+  border: '1px solid var(--j-surface-high)',
+  boxShadow: '0 18px 48px var(--j-shadow)',
 };
 
 const PANEL_STYLE = {
-  background: '#201F1F',
-  border: '1px solid #2A2A2A',
+  background: 'var(--j-surface-panel)',
+  border: '1px solid var(--j-surface-high)',
   boxShadow: 'none',
 };
 
@@ -162,8 +162,8 @@ function SectionStateBlock({
       style={{
         minHeight: isMobile ? 132 : 150,
         borderRadius: 14,
-        border: '1px dashed #353534',
-        background: '#1A1A1A',
+        border: '1px dashed var(--j-border-strong)',
+        background: 'var(--j-surface-muted)',
         padding: isMobile ? 16 : 20,
         display: 'grid',
         placeItems: 'center',
@@ -171,10 +171,10 @@ function SectionStateBlock({
       }}
     >
       <Space direction="vertical" size={12} style={{ width: '100%', maxWidth: 440 }}>
-        <Typography.Text style={{ color: '#E5E2E1', fontSize: isMobile ? 13 : 14, fontWeight: 600 }}>
+        <Typography.Text style={{ color: 'var(--j-text)', fontSize: isMobile ? 13 : 14, fontWeight: 600 }}>
           {title}
         </Typography.Text>
-        <Typography.Text style={{ color: '#8F8578', fontSize: 12, lineHeight: 1.6 }}>
+        <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 12, lineHeight: 1.6 }}>
           {description}
         </Typography.Text>
         {action}
@@ -317,7 +317,7 @@ function MetricCard({
   tone?: 'amber' | 'red' | 'default';
 }) {
   const isMobile = useIsMobileLayout();
-  const accent = tone === 'red' ? '#ff7d7d' : tone === 'amber' ? '#FFD598' : '#E5E2E1';
+  const accent = tone === 'red' ? '#ff7d7d' : tone === 'amber' ? '#FFD598' : 'var(--j-text)';
 
   return (
     <Card
@@ -330,7 +330,7 @@ function MetricCard({
           <Typography.Text
             style={{
               display: 'block',
-              color: '#BFB6A8',
+              color: 'var(--j-text-secondary)',
               fontSize: 11,
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
@@ -342,7 +342,7 @@ function MetricCard({
             style={{
               display: 'block',
               marginTop: 8,
-              color: '#E5E2E1',
+              color: 'var(--j-text)',
               fontFamily: '"JetBrains Mono", monospace',
               fontSize: isMobile ? 22 : 30,
               fontWeight: 700,
@@ -355,7 +355,7 @@ function MetricCard({
             {value}
           </Typography.Text>
           {hint ? (
-            <Typography.Text style={{ display: 'block', marginTop: 8, color: '#8F8578', fontSize: 12 }}>
+            <Typography.Text style={{ display: 'block', marginTop: 8, color: 'var(--j-text-tertiary)', fontSize: 12 }}>
               {hint}
             </Typography.Text>
           ) : null}
@@ -366,7 +366,7 @@ function MetricCard({
             width: isMobile ? 36 : 42,
             height: isMobile ? 36 : 42,
             borderRadius: 10,
-            border: '1px solid #353534',
+            border: '1px solid var(--j-border-strong)',
             background: 'linear-gradient(180deg, rgba(255, 213, 152, 0.14), rgba(255, 213, 152, 0.06))',
             color: accent,
             display: 'grid',
@@ -403,10 +403,10 @@ function SectionCard({
           size={isMobile ? 8 : 12}
         >
           <div>
-            <Typography.Title level={isMobile ? 5 : 4} style={{ margin: 0, color: '#E5E2E1' }}>
+            <Typography.Title level={isMobile ? 5 : 4} style={{ margin: 0, color: 'var(--j-text)' }}>
               {title}
             </Typography.Title>
-            {subtitle ? <Typography.Text style={{ color: '#8F8578' }}>{subtitle}</Typography.Text> : null}
+            {subtitle ? <Typography.Text style={{ color: 'var(--j-text-tertiary)' }}>{subtitle}</Typography.Text> : null}
           </div>
           {extra}
         </Space>
@@ -430,12 +430,12 @@ function BarRow({
   return (
     <Space direction="vertical" size={6} style={{ width: '100%' }}>
       <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
-        <Typography.Text style={{ color: '#E5E2E1' }}>{label}</Typography.Text>
+        <Typography.Text style={{ color: 'var(--j-text)' }}>{label}</Typography.Text>
         <Typography.Text style={{ color: '#FFD598', fontFamily: '"JetBrains Mono", monospace' }}>
           {value}
         </Typography.Text>
       </Space>
-      <div style={{ height: 8, borderRadius: 999, background: '#2A2A2A', overflow: 'hidden' }}>
+      <div style={{ height: 8, borderRadius: 999, background: 'var(--j-surface-high)', overflow: 'hidden' }}>
         <div
           style={{
             width: `${Math.max(6, Math.min(100, percent))}%`,
@@ -445,7 +445,7 @@ function BarRow({
           }}
         />
       </div>
-      {detail ? <Typography.Text style={{ color: '#8F8578', fontSize: 12 }}>{detail}</Typography.Text> : null}
+      {detail ? <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 12 }}>{detail}</Typography.Text> : null}
     </Space>
   );
 }
@@ -591,7 +591,7 @@ export function DashboardPage() {
   const meta = roleMeta[role];
 
   return (
-    <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: '100%', color: '#E5E2E1' }}>
+    <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: '100%', color: 'var(--j-text)' }}>
       <Card
         bordered={false}
         style={DASHBOARD_SHELL_STYLE}
@@ -609,7 +609,7 @@ export function DashboardPage() {
               <Typography.Title level={isMobile ? 4 : 3} style={{ margin: 0, color: '#FFD598' }}>
                 {pointCentric ? 'Дашборд точки' : 'Дашборд сети'}
               </Typography.Title>
-              <Typography.Text style={{ color: '#BFB6A8' }}>
+              <Typography.Text style={{ color: 'var(--j-text-secondary)' }}>
                 {meta.description}
                 {name ? ` • ${name}` : ''}
               </Typography.Text>
@@ -619,8 +619,8 @@ export function DashboardPage() {
                 color="default"
                 style={{
                   marginInlineEnd: 0,
-                  background: '#201F1F',
-                  borderColor: '#353534',
+                  background: 'var(--j-surface-panel)',
+                  borderColor: 'var(--j-border-strong)',
                   color: '#FFD598',
                   fontFamily: '"JetBrains Mono", monospace',
                 }}
@@ -633,9 +633,9 @@ export function DashboardPage() {
                 loading={refreshing}
                 block={isMobile}
                 style={{
-                  background: '#2A2A2A',
-                  color: '#E5E2E1',
-                  borderColor: '#353534',
+                  background: 'var(--j-surface-high)',
+                  color: 'var(--j-text)',
+                  borderColor: 'var(--j-border-strong)',
                 }}
               >
                 Обновить
@@ -647,7 +647,7 @@ export function DashboardPage() {
             {!pointCentric ? (
               <Col xs={24} md={8} xl={6}>
                 <Space direction="vertical" size={6} style={{ width: '100%' }}>
-                  <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em' }}>
                     Период
                   </Typography.Text>
                   <Select
@@ -663,7 +663,7 @@ export function DashboardPage() {
             ) : null}
             <Col xs={24} md={pointCentric ? 14 : 10} xl={pointCentric ? 10 : 8}>
               <Space direction="vertical" size={6} style={{ width: '100%' }}>
-                <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
+                <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em' }}>
                   {pointCentric ? 'Точка' : 'Фильтр по точке'}
                 </Typography.Text>
                   <Select
@@ -682,12 +682,12 @@ export function DashboardPage() {
                 style={{
                   ...PANEL_STYLE,
                   height: '100%',
-                  background: '#1A1A1A',
+                  background: 'var(--j-surface-muted)',
                 }}
                 styles={{ body: { padding: isMobile ? 12 : 14 } }}
               >
                 <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                  <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em' }}>
                     Контур
                   </Typography.Text>
                   <Typography.Text
@@ -702,7 +702,7 @@ export function DashboardPage() {
                       ? selectedPoint?.name ?? (pointsQuery.isLoading ? 'Загрузка точек...' : 'Выберите точку')
                       : selectedPoint?.name ?? `Все точки (${availablePointsCount})`}
                   </Typography.Text>
-                  <Typography.Text style={{ color: '#8F8578', fontSize: 12 }}>
+                  <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 12 }}>
                     {pointCentric
                       ? 'Обновление идет через веб-сокет с резервным переподключением.'
                       : 'Автообновление выполняется каждые 45 секунд.'}
@@ -830,10 +830,10 @@ function NetworkDashboardCard({
       >
         <Space align="center" size={10} wrap style={{ width: '100%', justifyContent: 'space-between' }}>
           <div>
-            <Typography.Text style={{ color: '#E5E2E1', fontWeight: 600 }}>
+            <Typography.Text style={{ color: 'var(--j-text)', fontWeight: 600 }}>
               {networkDegraded ? 'Часть секций работает с ограничениями' : 'Все секции доступны'}
             </Typography.Text>
-            <Typography.Text style={{ display: 'block', marginTop: 4, color: '#8F8578', fontSize: 12 }}>
+            <Typography.Text style={{ display: 'block', marginTop: 4, color: 'var(--j-text-tertiary)', fontSize: 12 }}>
               {networkDegraded
                 ? 'Показываем последние доступные данные и отдельные статусы по каждой секции.'
                 : 'Данные по выручке, каналам и блюдам обновляются независимо.'}
@@ -843,8 +843,8 @@ function NetworkDashboardCard({
             color="default"
             style={{
               marginInlineEnd: 0,
-              background: networkDegraded ? '#2A2418' : '#201F1F',
-              borderColor: networkDegraded ? '#4F4538' : '#353534',
+              background: networkDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+              borderColor: networkDegraded ? 'var(--j-border)' : 'var(--j-border-strong)',
               color: networkDegraded ? '#E8B86D' : '#FFD598',
               fontFamily: '"JetBrains Mono", monospace',
             }}
@@ -941,9 +941,9 @@ function NetworkDashboardCard({
                 color="default"
                 style={{
                   marginInlineEnd: 0,
-                  background: revenueDegraded ? '#2A2418' : '#201F1F',
-                  borderColor: revenueInitialLoading || revenueDegraded ? '#4F4538' : '#353534',
-                  color: revenueInitialLoading ? '#E5E2E1' : revenueDegraded ? '#E8B86D' : '#FFD598',
+                  background: revenueDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+                  borderColor: revenueInitialLoading || revenueDegraded ? 'var(--j-border)' : 'var(--j-border-strong)',
+                  color: revenueInitialLoading ? 'var(--j-text)' : revenueDegraded ? '#E8B86D' : '#FFD598',
                 }}
               >
                 {revenueInitialLoading
@@ -970,9 +970,9 @@ function NetworkDashboardCard({
                     icon={<ReloadOutlined />}
                     onClick={onRetryRevenue}
                     style={{
-                      background: '#2A2A2A',
-                      color: '#E5E2E1',
-                      borderColor: '#353534',
+                      background: 'var(--j-surface-high)',
+                      color: 'var(--j-text)',
+                      borderColor: 'var(--j-border-strong)',
                     }}
                   >
                     Повторить
@@ -1014,9 +1014,9 @@ function NetworkDashboardCard({
                 color="default"
                 style={{
                   marginInlineEnd: 0,
-                  background: channelsDegraded ? '#2A2418' : '#201F1F',
-                  borderColor: channelsInitialLoading || channelsDegraded ? '#4F4538' : '#353534',
-                  color: channelsInitialLoading ? '#E5E2E1' : channelsDegraded ? '#E8B86D' : '#FFD598',
+                  background: channelsDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+                  borderColor: channelsInitialLoading || channelsDegraded ? 'var(--j-border)' : 'var(--j-border-strong)',
+                  color: channelsInitialLoading ? 'var(--j-text)' : channelsDegraded ? '#E8B86D' : '#FFD598',
                 }}
               >
                 {channelsInitialLoading
@@ -1043,9 +1043,9 @@ function NetworkDashboardCard({
                     icon={<ReloadOutlined />}
                     onClick={onRetryChannels}
                     style={{
-                      background: '#2A2A2A',
-                      color: '#E5E2E1',
-                      borderColor: '#353534',
+                      background: 'var(--j-surface-high)',
+                      color: 'var(--j-text)',
+                      borderColor: 'var(--j-border-strong)',
                     }}
                   >
                     Повторить
@@ -1065,17 +1065,17 @@ function NetworkDashboardCard({
                     style={{
                       padding: '12px 14px',
                       borderRadius: 10,
-                      border: '1px solid #2A2A2A',
-                      background: '#1A1A1A',
+                      border: '1px solid var(--j-surface-high)',
+                      background: 'var(--j-surface-muted)',
                     }}
                   >
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
                       <div>
-                        <Typography.Text style={{ color: '#E5E2E1' }}>
+                        <Typography.Text style={{ color: 'var(--j-text)' }}>
                           {channelLabel(channel.source_channel)}
                         </Typography.Text>
                         <Typography.Text
-                          style={{ display: 'block', marginTop: 4, color: '#8F8578', fontSize: 12 }}
+                          style={{ display: 'block', marginTop: 4, color: 'var(--j-text-tertiary)', fontSize: 12 }}
                         >
                           {formatMonoNumber(channel.order_count)} заказов
                         </Typography.Text>
@@ -1084,7 +1084,7 @@ function NetworkDashboardCard({
                         {formatMoney(channel.total_revenue)}
                       </Typography.Text>
                     </Space>
-                    <div style={{ height: 8, marginTop: 10, borderRadius: 999, background: '#2A2A2A' }}>
+                    <div style={{ height: 8, marginTop: 10, borderRadius: 999, background: 'var(--j-surface-high)' }}>
                       <div
                         style={{
                           width: `${Math.max(8, (channel.order_count / maxChannelOrders) * 100)}%`,
@@ -1115,9 +1115,9 @@ function NetworkDashboardCard({
             color="default"
             style={{
               marginInlineEnd: 0,
-              background: dishesDegraded ? '#2A2418' : '#201F1F',
-              borderColor: dishesInitialLoading || dishesDegraded ? '#4F4538' : '#353534',
-              color: dishesInitialLoading ? '#E5E2E1' : dishesDegraded ? '#E8B86D' : '#FFD598',
+              background: dishesDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+              borderColor: dishesInitialLoading || dishesDegraded ? 'var(--j-border)' : 'var(--j-border-strong)',
+              color: dishesInitialLoading ? 'var(--j-text)' : dishesDegraded ? '#E8B86D' : '#FFD598',
             }}
           >
             {dishesInitialLoading
@@ -1144,9 +1144,9 @@ function NetworkDashboardCard({
                 icon={<ReloadOutlined />}
                 onClick={onRetryDishes}
                 style={{
-                  background: '#2A2A2A',
-                  color: '#E5E2E1',
-                  borderColor: '#353534',
+                  background: 'var(--j-surface-high)',
+                  color: 'var(--j-text)',
+                  borderColor: 'var(--j-border-strong)',
                 }}
               >
                 Повторить
@@ -1166,8 +1166,8 @@ function NetworkDashboardCard({
                 style={{
                   padding: '12px 14px',
                   borderRadius: 10,
-                  border: '1px solid #2A2A2A',
-                  background: '#1A1A1A',
+                  border: '1px solid var(--j-surface-high)',
+                  background: 'var(--j-surface-muted)',
                 }}
               >
                 <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
@@ -1176,8 +1176,8 @@ function NetworkDashboardCard({
                       color="default"
                       style={{
                         marginInlineEnd: 0,
-                        background: '#2A2A2A',
-                        borderColor: '#353534',
+                        background: 'var(--j-surface-high)',
+                        borderColor: 'var(--j-border-strong)',
                         color: '#FFD598',
                         fontFamily: '"JetBrains Mono", monospace',
                       }}
@@ -1185,8 +1185,8 @@ function NetworkDashboardCard({
                       #{index + 1}
                     </Tag>
                     <div>
-                      <Typography.Text style={{ color: '#E5E2E1' }}>{dish.dish_name}</Typography.Text>
-                      <Typography.Text style={{ display: 'block', marginTop: 4, color: '#8F8578', fontSize: 12 }}>
+                      <Typography.Text style={{ color: 'var(--j-text)' }}>{dish.dish_name}</Typography.Text>
+                      <Typography.Text style={{ display: 'block', marginTop: 4, color: 'var(--j-text-tertiary)', fontSize: 12 }}>
                         {formatMonoNumber(dish.total_quantity)} шт.
                       </Typography.Text>
                     </div>
@@ -1259,7 +1259,7 @@ function PointDashboardCard({
       >
         <Space align="center" size={10} wrap style={{ width: '100%', justifyContent: 'space-between' }}>
           <div>
-            <Typography.Text style={{ color: '#E5E2E1', fontWeight: 600 }}>
+            <Typography.Text style={{ color: 'var(--j-text)', fontWeight: 600 }}>
               {summaryInitialLoading || channelsInitialLoading
                 ? 'Загружаем данные точки'
                 : summaryDegraded || channelsDegraded
@@ -1268,7 +1268,7 @@ function PointDashboardCard({
                     ? 'Список точек недоступен'
                     : 'Точка готова к показу'}
             </Typography.Text>
-            <Typography.Text style={{ display: 'block', marginTop: 4, color: '#8F8578', fontSize: 12 }}>
+            <Typography.Text style={{ display: 'block', marginTop: 4, color: 'var(--j-text-tertiary)', fontSize: 12 }}>
               {summaryInitialLoading || channelsInitialLoading
                 ? 'Секции загружаются независимо, чтобы не терять уже доступные данные.'
                 : summaryDegraded || channelsDegraded
@@ -1283,8 +1283,8 @@ function PointDashboardCard({
             style={{
               marginInlineEnd: 0,
               background:
-                summaryInitialLoading || channelsInitialLoading ? '#1F251D' : summaryDegraded || channelsDegraded ? '#2A2418' : '#201F1F',
-              borderColor: '#353534',
+                summaryInitialLoading || channelsInitialLoading ? '#1F251D' : summaryDegraded || channelsDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+              borderColor: 'var(--j-border-strong)',
               color: summaryInitialLoading || channelsInitialLoading ? '#B5E8C0' : summaryDegraded || channelsDegraded ? '#E8B86D' : '#FFD598',
               fontFamily: '"JetBrains Mono", monospace',
             }}
@@ -1377,9 +1377,9 @@ function PointDashboardCard({
                 color="default"
                 style={{
                   marginInlineEnd: 0,
-                  background: channelsDegraded ? '#2A2418' : '#201F1F',
-                  borderColor: channelsInitialLoading || channelsDegraded ? '#4F4538' : '#353534',
-                  color: channelsInitialLoading ? '#E5E2E1' : channelsDegraded ? '#E8B86D' : '#FFD598',
+                  background: channelsDegraded ? 'var(--j-warning-bg)' : 'var(--j-surface-panel)',
+                  borderColor: channelsInitialLoading || channelsDegraded ? 'var(--j-border)' : 'var(--j-border-strong)',
+                  color: channelsInitialLoading ? 'var(--j-text)' : channelsDegraded ? '#E8B86D' : '#FFD598',
                 }}
               >
                 {channelsInitialLoading ? 'ЗАГРУЗКА' : channelsDegraded ? 'ЧАСТИЧНО' : channelsError && !channelsHasData ? 'ОШИБКА' : 'ГОТОВО'}
@@ -1400,9 +1400,9 @@ function PointDashboardCard({
                     icon={<ReloadOutlined />}
                     onClick={onRetryChannels}
                     style={{
-                      background: '#2A2A2A',
-                      color: '#E5E2E1',
-                      borderColor: '#353534',
+                      background: 'var(--j-surface-high)',
+                      color: 'var(--j-text)',
+                      borderColor: 'var(--j-border-strong)',
                     }}
                   >
                     Повторить
@@ -1422,17 +1422,17 @@ function PointDashboardCard({
                     style={{
                       padding: '12px 14px',
                       borderRadius: 10,
-                      border: '1px solid #2A2A2A',
-                      background: '#1A1A1A',
+                      border: '1px solid var(--j-surface-high)',
+                      background: 'var(--j-surface-muted)',
                     }}
                   >
                     <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
                       <div>
-                        <Typography.Text style={{ color: '#E5E2E1' }}>
+                        <Typography.Text style={{ color: 'var(--j-text)' }}>
                           {channelLabel(channel.source_channel)}
                         </Typography.Text>
                         <Typography.Text
-                          style={{ display: 'block', marginTop: 4, color: '#8F8578', fontSize: 12 }}
+                          style={{ display: 'block', marginTop: 4, color: 'var(--j-text-tertiary)', fontSize: 12 }}
                         >
                           {formatMonoNumber(channel.order_count)} заказов
                         </Typography.Text>
@@ -1441,7 +1441,7 @@ function PointDashboardCard({
                         {formatMoney(channel.total_revenue)}
                       </Typography.Text>
                     </Space>
-                    <div style={{ height: 8, marginTop: 10, borderRadius: 999, background: '#2A2A2A' }}>
+                    <div style={{ height: 8, marginTop: 10, borderRadius: 999, background: 'var(--j-surface-high)' }}>
                       <div
                         style={{
                           width: `${Math.max(8, (channel.order_count / maxChannelOrders) * 100)}%`,
@@ -1472,8 +1472,8 @@ function PointDashboardCard({
                 color="default"
                 style={{
                   marginInlineEnd: 0,
-                  background: '#2A2A2A',
-                  borderColor: '#353534',
+                  background: 'var(--j-surface-high)',
+                  borderColor: 'var(--j-border-strong)',
                   color: '#FFD598',
                 }}
               >
@@ -1486,11 +1486,11 @@ function PointDashboardCard({
                 style={{
                   padding: '12px 14px',
                   borderRadius: 10,
-                  border: '1px solid #2A2A2A',
-                  background: '#1A1A1A',
+                  border: '1px solid var(--j-surface-high)',
+                  background: 'var(--j-surface-muted)',
                 }}
               >
-                <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
+                <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em' }}>
                   Выбранная точка
                 </Typography.Text>
                 <Typography.Text
@@ -1510,18 +1510,18 @@ function PointDashboardCard({
                 style={{
                   padding: '12px 14px',
                   borderRadius: 10,
-                  border: '1px solid #2A2A2A',
-                  background: '#1A1A1A',
+                  border: '1px solid var(--j-surface-high)',
+                  background: 'var(--j-surface-muted)',
                 }}
               >
-                <Typography.Text style={{ color: '#8F8578', fontSize: 11, letterSpacing: '0.16em' }}>
+                <Typography.Text style={{ color: 'var(--j-text-tertiary)', fontSize: 11, letterSpacing: '0.16em' }}>
                   Режим обновления
                 </Typography.Text>
                 <Typography.Text
                   style={{
                     display: 'block',
                     marginTop: 8,
-                    color: '#E5E2E1',
+                    color: 'var(--j-text)',
                   }}
                 >
                   Обновления приходят по веб-сокету при создании заказа и смене статуса, резервный опрос включается каждые 30 секунд.

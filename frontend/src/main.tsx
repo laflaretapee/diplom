@@ -7,12 +7,17 @@ import 'antd/dist/reset.css';
 import { App } from './App';
 import { queryClient } from './app/queryClient';
 import { appTheme, lightTheme } from './app/theme';
+import { themeSurfaceVars } from './app/themeVars';
 import { useThemeStore } from './store/themeStore';
 import './styles/global.css';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const isDark = useThemeStore((s) => s.isDark);
-  return <ConfigProvider theme={isDark ? appTheme : lightTheme}>{children}</ConfigProvider>;
+  return (
+    <ConfigProvider theme={isDark ? appTheme : lightTheme}>
+      <div style={themeSurfaceVars(isDark)}>{children}</div>
+    </ConfigProvider>
+  );
 }
 
 const container = document.getElementById('root');
